@@ -1,0 +1,53 @@
+# macOS
+.DS_Store
+Icon?
+.Spotlight-V100
+.Trashes
+
+# Node / JavaScript
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.eslintcache
+
+# Build outputs
+dist/
+build/
+out/
+coverage/
+.nyc_output/
+.cache/
+.parcel-cache/
+.turbo/
+.next/
+
+# Chrome Extension packaging artifacts
+key.pem
+*.pem
+*.crx
+*.pub
+web-ext-artifacts/
+packaged/
+release/
+extension.zip
+
+# Editors / IDEs
+.vscode/
+.idea/
+*.sublime-workspace
+*.code-workspace
+
+# Temp files
+tmp/
+temp/
+*.tmp
+*.swp
+*.swo
+
+# Environment files
+.env
+.env.*
+!.env.example
