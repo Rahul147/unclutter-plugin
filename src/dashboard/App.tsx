@@ -23,17 +23,17 @@ export default function App() {
   }, [items, query]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-6">
-      <div className="mx-auto w-full max-w-3xl space-y-4">
-        <div className="flex items-end justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">unclutter</h1>
-            <p className="text-sm text-muted-foreground">Save now, read beautifully later.</p>
+    <div className="app">
+      <div className="container">
+        <div className="row">
+          <div className="stack">
+            <h1 className="heading">unclutter</h1>
+            <p className="subtle">Save now, read beautifully later.</p>
           </div>
           <Badge variant="secondary">{items.length} saved</Badge>
         </div>
         <Separator />
-        <div className="flex items-center gap-3">
+        <div className="row" style={{ alignItems: 'center' }}>
           <Input placeholder="Search saved pages..." value={query} onChange={(e) => setQuery(e.target.value)} />
         </div>
 
@@ -43,25 +43,23 @@ export default function App() {
               <CardTitle>No saves yet</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">Use the context menu or the keyboard shortcut to save the current page.</p>
+              <p className="subtle">Use the context menu or the keyboard shortcut to save the current page.</p>
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 gap-3">
+          <div className="grid">
             {filtered.map((it) => (
               <Card key={it.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <a href={it.url} target="_blank" rel="noreferrer" className="font-medium hover:underline truncate block">
+                <CardContent>
+                  <div className="row" style={{ alignItems: 'center' }}>
+                    <div style={{ minWidth: 0 }}>
+                      <a href={it.url} target="_blank" rel="noreferrer" className="link truncate">
                         {it.title || it.url}
                       </a>
-                      <span className="text-xs text-muted-foreground">{new URL(it.url).hostname}</span>
+                      <span className="meta">{new URL(it.url).hostname}</span>
                     </div>
-                    <div className="flex shrink-0 items-center gap-2">
-                      <Button asChild size="sm" variant="outline">
-                        <a href={it.url} target="_blank" rel="noreferrer">Open</a>
-                      </Button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <a className="btn btn--sm btn--outline" href={it.url} target="_blank" rel="noreferrer">Open</a>
                     </div>
                   </div>
                 </CardContent>

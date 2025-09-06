@@ -20,7 +20,7 @@
       "@/utils/*": ["src/utils/*"]
     }
   },
-  "include": ["src", "manifest.json", "vite.config.ts", "tailwind.config.ts"],
+  "include": ["src", "manifest.json", "vite.config.ts"],
   "exclude": ["dist", "node_modules"]
 }
 
