@@ -16,6 +16,7 @@
   "private": "true",
   "devDependencies": {
     "@crxjs/vite-plugin": "^2.2.0",
+    "@radix-ui/react-slot": "^1.2.3",
     "@tailwindcss/postcss": "^4.1.13",
     "@types/node": "^24.3.1",
     "@types/react": "^19.1.12",

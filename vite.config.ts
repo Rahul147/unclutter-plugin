@@ -42,6 +42,11 @@ export default defineConfig(({ command }) => {
       sourcemap: true,
       target: "es2022",
       // Let CRXJS manage inputs; it injects HTML and service worker entries
+      rollupOptions: {
+        input: {
+          dashboard: "src/dashboard/index.html",
+        },
+      },
     },
   };
 });

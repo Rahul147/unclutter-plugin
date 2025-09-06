@@ -27,5 +27,16 @@
       "description": "Save current page to unclutter"
     }
   },
-  "options_page": "src/options/index.html"
+  "options_page": "src/options/index.html",
+  "web_accessible_resources": [
+    {
+      "matches": ["<all_urls>"],
+      "resources": [
+        "src/dashboard/index.html",
+        "src/options/index.html",
+        "**/*"
+      ],
+      "use_dynamic_url": false
+    }
+  ]
 }
