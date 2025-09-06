@@ -3,9 +3,7 @@
   "name": "unclutter",
   "version": "0.1.0",
   "description": "Save pages locally and revisit them in a beautiful dashboard.",
-  "action": {
-    "default_popup": "src/dashboard/index.html"
-  },
+  "action": {},
   "background": {
     "service_worker": "src/background/index.ts",
     "type": "module"
