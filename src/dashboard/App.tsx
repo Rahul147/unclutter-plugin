@@ -43,13 +43,14 @@ export default function App() {
       setItems(all.sort((a, b) => b.savedAt - a.savedAt));
       try {
         const { enableTags: flag } = await chrome.storage.local.get({ enableTags: false });
-        setEnableTags(Boolean(flag));
+        const on = Boolean(flag);
+        setEnableTags(on);
+        if (on) {
+          const counts = await getTagCounts();
+          setTags(counts);
+        }
       } catch {
         setEnableTags(false);
-      }
-      if (enableTags) {
-        const counts = await getTagCounts();
-        setTags(counts);
       }
     })();
     // Note: enableTags is intentionally omitted to avoid double fetching during init
@@ -63,11 +64,20 @@ export default function App() {
     return items.filter((it: SavedItem) => it.bookmarked === true);
   }, [items, tab]);
 
+  const tagApplied = useMemo(() => {
+    if (selectedTags.length === 0) return tabFiltered;
+    const lowers = selectedTags.map((t: string) => t.toLowerCase());
+    return tabFiltered.filter((it: SavedItem) => {
+      const set = new Set((it.tags || []).map((t: string) => t.toLowerCase()));
+      return andMode ? lowers.every((t: string) => set.has(t)) : lowers.some((t: string) => set.has(t));
+    });
+  }, [tabFiltered, selectedTags, andMode]);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return tabFiltered;
-    return tabFiltered.filter((it: SavedItem) => (it.title || it.url).toLowerCase().includes(q));
-  }, [tabFiltered, query]);
+    if (!q) return tagApplied;
+    return tagApplied.filter((it: SavedItem) => (it.title || it.url).toLowerCase().includes(q));
+  }, [tagApplied, query]);
 
   // When tag feature is disabled, ensure any existing selections are cleared
   useEffect(() => {
@@ -78,7 +88,7 @@ export default function App() {
 
   useEffect(() => {
     void (async () => {
-      if (!enableTags || selectedTags.length === 0) {
+      if (selectedTags.length === 0) {
         const all = await listItems();
         setItems(all.sort((a, b) => b.savedAt - a.savedAt));
         return;
