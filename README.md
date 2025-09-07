@@ -6,6 +6,12 @@ Bootstrap repository for a Chrome extension (default branch: `main`).
 - Build your source into `dist/` (ignored by git).
 - Load the unpacked extension via `chrome://extensions` → Enable Developer Mode → Load unpacked → select the project root or `dist/` as appropriate.
 
+## Theme
+- The UI supports light and dark themes with a deep black/white palette.
+- Toggle the theme from the Dashboard and Options headers using the moon/sun button.
+- Preference persists via `localStorage` key `unclutter.theme` across pages.
+- If no preference is saved, the UI follows the system `prefers-color-scheme`.
+
 ## Categories and Bookmarking
 - New: items with status `unread`.
 - Viewed: items with status `done` (marked when you open from the dashboard).

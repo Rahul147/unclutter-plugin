@@ -19,6 +19,7 @@ import { Separator } from '../components/ui/separator';
 import { Button } from '../components/ui/button';
 import TagFilter from './components/TagFilter';
 import TagEditor from './components/TagEditor';
+import { applyTheme, getTheme } from '../lib/theme';
 
 export default function App() {
   const [items, setItems] = useState<SavedItem[]>([]);
@@ -28,6 +29,12 @@ export default function App() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [enableTags, setEnableTags] = useState<boolean>(false);
   const [tab, setTab] = useState<'new' | 'viewed' | 'bookmarked'>('new');
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const pref = getTheme();
+    if (pref === 'light' || pref === 'dark') return pref;
+    const systemDark = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return systemDark ? 'dark' : 'light';
+  });
   useEffect(() => {
     void (async () => {
       const all = await listItems();
@@ -117,6 +124,12 @@ export default function App() {
     setItems((prev: SavedItem[]) => prev.map((it: SavedItem) => (it.id === id ? updated : it)));
   }
 
+  function onToggleTheme() {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+    applyTheme(next);
+  }
+
   return (
     <div className="app">
       <div className="container">
@@ -125,7 +138,18 @@ export default function App() {
             <h1 className="heading">unclutter</h1>
             <p className="subtle">Save now, read beautifully later.</p>
           </div>
-          <Badge variant="secondary">{items.length} saved</Badge>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Badge variant="secondary">{items.length} saved</Badge>
+            <Button
+              size="icon"
+              variant="ghost"
+              aria-label="Toggle theme"
+              title={theme === 'dark' ? 'Switch to light' : 'Switch to dark'}
+              onClick={onToggleTheme}
+            >
+              {theme === 'dark' ? '☀︎' : '☾'}
+            </Button>
+          </div>
         </div>
         <Separator />
         <div className="row" style={{ alignItems: 'center', gap: 8 }}>

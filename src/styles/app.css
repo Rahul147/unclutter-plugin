@@ -1,33 +1,52 @@
 /* Base theme variables */
 :root {
   --bg: #ffffff;
-  --fg: #0f172a;
-  --muted-fg: #64748b;
+  --fg: #0a0a0a;
+  --muted-fg: #6b7280;
   --card: #ffffff;
   --card-fg: var(--fg);
   --border: #e5e7eb;
-  --primary: #111827;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #0a0a0a;
+  --primary: #0a0a0a;
   --primary-foreground: #ffffff;
-  --secondary: #f3f4f6;
-  --secondary-foreground: #111827;
-  --ring: #6366f1;
-  --ring-alpha: rgba(99, 102, 241, 0.3);
+  --ring: #0a0a0a;
+  --ring-alpha: rgba(10, 10, 10, 0.25);
   --radius: 12px;
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
+/* Explicit dark theme override via data attribute */
+:root[data-theme="dark"] {
+  --bg: #0a0a0a;
+  --fg: #fafafa;
+  --muted-fg: #a1a1aa;
+  --card: #0a0a0a;
+  --card-fg: var(--fg);
+  --border: #27272a;
+  --secondary: #18181b;
+  --secondary-foreground: #fafafa;
+  --primary: #e5e5e5;
+  --primary-foreground: #0a0a0a;
+  --ring: #fafafa;
+  --ring-alpha: rgba(250, 250, 250, 0.25);
+}
+
+/* System preference fallback when no explicit theme is set */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0b1220;
-    --fg: #e5e7eb;
-    --muted-fg: #94a3b8;
-    --card: #0f172a;
+  :root:not([data-theme]) {
+    --bg: #0a0a0a;
+    --fg: #fafafa;
+    --muted-fg: #a1a1aa;
+    --card: #0a0a0a;
     --card-fg: var(--fg);
-    --border: #1f2937;
-    --secondary: #111827;
-    --secondary-foreground: #e5e7eb;
-    --ring: #7c83f8;
-    --ring-alpha: rgba(124, 131, 248, 0.35);
+    --border: #27272a;
+    --secondary: #18181b;
+    --secondary-foreground: #fafafa;
+    --primary: #e5e5e5;
+    --primary-foreground: #0a0a0a;
+    --ring: #fafafa;
+    --ring-alpha: rgba(250, 250, 250, 0.25);
   }
 }
 
