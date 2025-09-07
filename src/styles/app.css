@@ -119,3 +119,17 @@ h1.heading { font-size: 24px; font-weight: 600; letter-spacing: -0.01em; margin:
 .separator { background: var(--border); height: 1px; width: 100%; }
 .separator--vertical { width: 1px; height: 100%; }
 
+/* Tag editor */
+.tag-editor { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; position: relative; }
+.tag-chip { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 9999px; border: 1px solid var(--border); background: var(--secondary); color: var(--secondary-foreground); font-size: 12px; font-weight: 600; }
+.tag-chip__label { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tag-chip__remove { width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; border-radius: 9999px; }
+.tag-chip__remove:hover { background: var(--border); }
+.tag-input-wrap { position: relative; min-width: 160px; flex: 1 1 200px; }
+.tag-input { height: 36px; width: 100%; }
+.autocomplete { position: absolute; top: calc(100% + 4px); left: 0; right: 0; max-height: 240px; overflow: auto; border: 1px solid var(--border); background: var(--card); color: var(--card-fg); border-radius: 8px; box-shadow: var(--shadow-sm); z-index: 10; }
+.autocomplete__option { padding: 8px 10px; cursor: pointer; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.autocomplete__option:hover, .autocomplete__option.is-active { background: var(--secondary); }
+.tag-editor__hint { min-height: 16px; font-size: 12px; color: var(--muted-fg); }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+

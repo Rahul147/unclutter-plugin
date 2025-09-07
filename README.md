@@ -20,6 +20,14 @@ Bootstrap repository for a Chrome extension (default branch: `main`).
 
 Opening a saved item from the dashboard marks it as viewed and updates `lastOpenedAt`.
 
+## Tagging
+- Edit tags inline on each card using the "Edit tags" / "Done" toggle.
+- Tags render as chips; click the × on a chip to remove it. When the input is empty, Backspace removes the last chip.
+- Type to see autocomplete suggestions from all tags (excluding ones already added). Navigate with ArrowUp/ArrowDown and press Enter to add; Tab and Comma also add.
+- Pasting a comma- or semicolon-delimited list will add multiple tags at once.
+- Limits: max 20 tags per item; max 30 characters per tag. Duplicate tags (case-insensitive) are ignored.
+- Accessibility: input uses combobox with listbox suggestions; additions and removals are announced via a live region.
+
 ## Packaging
 - Keep any private keys (e.g., `key.pem`) out of version control.
 - Package artifacts like `.crx` or `.zip` are ignored by the `.gitignore`.
