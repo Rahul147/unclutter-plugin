@@ -1,4 +1,5 @@
-import { openDB, DBSchema, IDBPDatabase, IDBPTransaction } from "idb";
+import type { DBSchema, IDBPDatabase, IDBPTransaction } from "idb";
+import { openDB } from "idb";
 
 export type SavedItem = {
   id: string;

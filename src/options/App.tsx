@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Separator } from '../components/ui/separator';
+
 import { Button } from '../components/ui/button';
+import { Separator } from '../components/ui/separator';
 import { applyTheme, getTheme } from '../lib/theme';
 
 export default function App() {

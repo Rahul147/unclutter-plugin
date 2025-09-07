@@ -1,6 +1,8 @@
+import '../styles/app.css';
+
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import '../styles/app.css';
+
 import { initTheme } from '../lib/theme';
 import App from './App';
 

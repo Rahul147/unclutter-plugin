@@ -1,27 +1,26 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-  listItems,
-  type SavedItem,
-  getTagCounts,
-  queryItemsByTagsAND,
-  queryItemsByTagsOR,
-  addTagToItem,
-  removeTagFromItem,
-  setTagsForItem,
-  type TagCount,
-  updateItem,
-  toggleBookmark,
-  deleteItem,
-} from '../db/db';
+
+import { Badge } from '../components/ui/badge';
+import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
-import { Badge } from '../components/ui/badge';
 import { Separator } from '../components/ui/separator';
-import { Button } from '../components/ui/button';
-import TagFilter from './components/TagFilter';
-import TagEditor from './components/TagEditor';
-import { formatIST, formatRelativeDays } from '../utils/date';
+import {
+  deleteItem,
+  getTagCounts,
+  listItems,
+  queryItemsByTagsAND,
+  queryItemsByTagsOR,
+  type SavedItem,
+  setTagsForItem,
+  type TagCount,
+  toggleBookmark,
+  updateItem,
+} from '../db/db';
 import { applyTheme, getTheme } from '../lib/theme';
+import { formatIST, formatRelativeDays } from '../utils/date';
+import TagEditor from './components/TagEditor';
+import TagFilter from './components/TagFilter';
 
 export default function App() {
   const [items, setItems] = useState<SavedItem[]>([]);
@@ -57,7 +56,7 @@ export default function App() {
       }
     })();
     // Note: enableTags is intentionally omitted to avoid double fetching during init
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   useEffect(() => {
