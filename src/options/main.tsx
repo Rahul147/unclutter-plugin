@@ -1,6 +1,11 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
+import '../styles/app.css';
+import { initTheme } from '../lib/theme';
 import App from './App';
+
+// Initialize theme before rendering to avoid flash
+initTheme();
 
 const container = document.getElementById('root')!;
 const root = createRoot(container);
