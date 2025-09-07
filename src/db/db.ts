@@ -52,12 +52,12 @@ let dbPromise: Promise<IDBPDatabase<UnclutterDB>> | null = null;
 export function getDB(): Promise<IDBPDatabase<UnclutterDB>> {
   if (!dbPromise) {
     dbPromise = openDB<UnclutterDB>("unclutter", 3, {
-      upgrade(
+      upgrade: async (
         db: IDBPDatabase<UnclutterDB>,
         oldVersion: number,
         _newVersion: number,
         tx: IDBPTransaction<UnclutterDB, any, "versionchange">
-      ) {
+      ) => {
         if (oldVersion < 1) {
           const items = db.createObjectStore("items", { keyPath: "id" });
           items.createIndex("by_status", "status", { unique: false });
@@ -77,8 +77,8 @@ export function getDB(): Promise<IDBPDatabase<UnclutterDB>> {
           const items = tx.objectStore("items");
           // Add index for bookmarked
           items.createIndex("by_bookmarked", "bookmarked", { unique: false });
-          // Backfill existing items with bookmarked = false
-          (async () => {
+          // Backfill existing items with bookmarked = false (await within upgrade transaction)
+          try {
             let cursor = await items.openCursor();
             while (cursor) {
               const value: any = cursor.value;
@@ -88,9 +88,9 @@ export function getDB(): Promise<IDBPDatabase<UnclutterDB>> {
               }
               cursor = await cursor.continue();
             }
-          })().catch(() => {
+          } catch {
             // ignore backfill errors during upgrade
-          });
+          }
         }
       },
     });
