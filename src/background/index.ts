@@ -1,6 +1,6 @@
 // Background service worker (MV3)
 import { addItem, type SavedItem } from "../db/db";
-import { normalizeUrl, hashStringFNV1a } from "../utils/url";
+import { hashStringFNV1a,normalizeUrl } from "../utils/url";
 
 chrome.runtime.onInstalled.addListener(async () => {
   // Set up context menu

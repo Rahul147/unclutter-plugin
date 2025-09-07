@@ -1,11 +1,5 @@
-// IndexedDB access layer for unclutter. Provides CRUD utilities, tag helpers,
-// and a small set of count/query helpers. Keep signatures stable.
-import {
-  openDB,
-  type DBSchema,
-  type IDBPDatabase,
-  type IDBPTransaction,
-} from "idb";
+import type { DBSchema, IDBPDatabase, IDBPTransaction } from "idb";
+import { openDB } from "idb";
 
 export type SavedItem = {
   id: string;

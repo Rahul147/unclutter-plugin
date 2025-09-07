@@ -1,5 +1,6 @@
 // Separator primitive; used to divide content sections.
 import * as React from "react";
+
 import { cn } from "../../lib/utils";
 
 interface SeparatorProps extends React.HTMLAttributes<HTMLDivElement> {
