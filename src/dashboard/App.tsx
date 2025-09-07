@@ -20,6 +20,7 @@ import { Separator } from '../components/ui/separator';
 import { Button } from '../components/ui/button';
 import TagFilter from './components/TagFilter';
 import TagEditor from './components/TagEditor';
+import { formatIST, formatRelativeDays } from '../utils/date';
 import { applyTheme, getTheme } from '../lib/theme';
 
 export default function App() {
@@ -263,7 +264,21 @@ export default function App() {
                       <a href={it.url} target="_blank" rel="noreferrer" className="link truncate" onClick={() => void onOpen(it.id)}>
                         {it.title || it.url}
                       </a>
-                      <span className="meta">{new URL(it.url).hostname}</span>
+                      <span className="meta">
+                        {new URL(it.url).hostname}
+                        {Number.isFinite(it.savedAt) && it.savedAt > 0 && (
+                          <>
+                            {' \u2022 '}
+                            {(() => {
+                              const relative = formatRelativeDays(it.savedAt);
+                              const ist = formatIST(it.savedAt);
+                              return (
+                                <span title={ist} aria-label={ist}>{relative}</span>
+                              );
+                            })()}
+                          </>
+                        )}
+                      </span>
                       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
                         {(it.tags || []).map((t: string) => (
                           <Badge key={t} variant="secondary">{t}</Badge>
