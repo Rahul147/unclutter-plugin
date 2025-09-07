@@ -18,7 +18,7 @@ import {
   updateItem,
 } from '../db/db';
 import { applyTheme, getTheme } from '../lib/theme';
-import { formatIST, formatRelativeDays } from '../utils/date';
+import { formatIST, formatRelativeAgo } from '../utils/date';
 import TagEditor from './components/TagEditor';
 import TagFilter from './components/TagFilter';
 
@@ -269,8 +269,9 @@ export default function App() {
                           <>
                             {' \u2022 '}
                             {(() => {
-                              const relative = formatRelativeDays(it.savedAt);
+                              const relative = formatRelativeAgo(it.savedAt);
                               const ist = formatIST(it.savedAt);
+                              if (!relative) return null;
                               return (
                                 <span title={ist} aria-label={ist}>{relative}</span>
                               );
