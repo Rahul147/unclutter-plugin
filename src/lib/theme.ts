@@ -1,3 +1,4 @@
+// Theme preference helpers for light/dark mode. Safe DOM/localStorage access.
 export type ThemePreference = "light" | "dark" | null;
 
 const STORAGE_KEY = "unclutter.theme";
@@ -50,4 +51,3 @@ export function initTheme(): void {
     }
   }
 }
-

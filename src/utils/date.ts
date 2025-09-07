@@ -1,4 +1,8 @@
-export function formatRelativeDays(savedAt: number, now: number = Date.now()): string {
+// Date formatting helpers used in the dashboard for relative and IST timestamps.
+export function formatRelativeDays(
+  savedAt: number,
+  now: number = Date.now()
+): string {
   if (!Number.isFinite(savedAt)) return "";
   const diffMs = Math.max(0, now - savedAt);
   const days = Math.floor(diffMs / 86400000);
@@ -57,4 +61,3 @@ export function formatIST(savedAt: number): string {
   // Force IST label for clarity even if Intl returns GMT offset elsewhere
   return `${dayWithSuffix} ${month} ${year}, ${hourPadded}:${minutePadded}${ampm} IST`;
 }
-

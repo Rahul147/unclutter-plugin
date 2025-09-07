@@ -1,3 +1,4 @@
+// Card primitives for simple composition; avoid changing markup/classes.
 import * as React from "react";
 
 import { cn } from "../../lib/utils";
