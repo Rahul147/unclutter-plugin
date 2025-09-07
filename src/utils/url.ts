@@ -1,3 +1,4 @@
+// URL normalization rules: drop tracking params, default ports, trailing slashes, and fragments.
 const STRIP_PARAMS = new Set([
   "utm_source",
   "utm_medium",
