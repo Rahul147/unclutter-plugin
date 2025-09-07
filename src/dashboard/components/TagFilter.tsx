@@ -14,7 +14,8 @@ export interface TagFilterProps {
 }
 
 export function TagFilter({ tags, selected, isAndMode, onToggleMode, onToggleTag, onClear }: TagFilterProps) {
-  const selectedSet = new Set(selected.map((t: string) => t.toLowerCase()));
+  // Use exact match to avoid marking differently-cased tags as selected simultaneously
+  const selectedSet = new Set(selected);
   return (
     <div className="stack" style={{ gap: 8 }}>
       <div className="row" style={{ alignItems: "center", gap: 8, flexWrap: "wrap" }}>
@@ -22,7 +23,7 @@ export function TagFilter({ tags, selected, isAndMode, onToggleMode, onToggleTag
         <Separator orientation="vertical" />
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {tags.map(({ tag, count }: TagCount) => {
-            const isSelected = selectedSet.has(tag.toLowerCase());
+            const isSelected = selectedSet.has(tag);
             return (
               <Badge
                 key={tag}
