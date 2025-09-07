@@ -12,6 +12,7 @@ export type SavedItem = {
   savedAt: number;
   lastOpenedAt: number | null;
   estReadMins: number | null;
+  bookmarked: boolean;
   favIconUrl: string | null;
   ogImage: string | null;
   notes: string | null;
@@ -37,6 +38,7 @@ interface UnclutterDB extends DBSchema {
       by_category: string | null;
       by_domainHash: string;
       by_tag: string;
+      by_bookmarked: boolean;
     };
   };
   settings: {
@@ -49,13 +51,13 @@ let dbPromise: Promise<IDBPDatabase<UnclutterDB>> | null = null;
 
 export function getDB(): Promise<IDBPDatabase<UnclutterDB>> {
   if (!dbPromise) {
-    dbPromise = openDB<UnclutterDB>("unclutter", 2, {
-      upgrade(
+    dbPromise = openDB<UnclutterDB>("unclutter", 3, {
+      upgrade: async (
         db: IDBPDatabase<UnclutterDB>,
         oldVersion: number,
         _newVersion: number,
         tx: IDBPTransaction<UnclutterDB, any, "versionchange">
-      ) {
+      ) => {
         if (oldVersion < 1) {
           const items = db.createObjectStore("items", { keyPath: "id" });
           items.createIndex("by_status", "status", { unique: false });
@@ -64,11 +66,31 @@ export function getDB(): Promise<IDBPDatabase<UnclutterDB>> {
           items.createIndex("by_domainHash", "domainHash", { unique: false });
           // v2 will add by_tag; if we create fresh at v2+, also create by_tag now
           items.createIndex("by_tag", "tags", { unique: false, multiEntry: true });
+          // v3 adds bookmark support
+          items.createIndex("by_bookmarked", "bookmarked", { unique: false });
           db.createObjectStore("settings", { keyPath: "dbVersion" });
         } else if (oldVersion < 2) {
           const items = tx.objectStore("items");
           // Add multiEntry index for tags
           items.createIndex("by_tag", "tags", { unique: false, multiEntry: true });
+        } else if (oldVersion < 3) {
+          const items = tx.objectStore("items");
+          // Add index for bookmarked
+          items.createIndex("by_bookmarked", "bookmarked", { unique: false });
+          // Backfill existing items with bookmarked = false (await within upgrade transaction)
+          try {
+            let cursor = await items.openCursor();
+            while (cursor) {
+              const value: any = cursor.value;
+              if (typeof value.bookmarked !== "boolean") {
+                value.bookmarked = false;
+                await cursor.update(value);
+              }
+              cursor = await cursor.continue();
+            }
+          } catch {
+            // ignore backfill errors during upgrade
+          }
         }
       },
     });
@@ -113,6 +135,70 @@ export async function countUnread(): Promise<number> {
     cursor = await cursor.continue();
   }
   return count;
+}
+
+export async function countByStatus(status: "unread" | "in_progress" | "done"): Promise<number> {
+  const db = await getDB();
+  let count = 0;
+  let cursor = await db.transaction("items").store.index("by_status").openCursor(status);
+  while (cursor) {
+    count++;
+    cursor = await cursor.continue();
+  }
+  return count;
+}
+
+export async function countBookmarked(): Promise<number> {
+  const db = await getDB();
+  let count = 0;
+  try {
+    let cursor = await db.transaction("items").store.index("by_bookmarked").openCursor(true);
+    while (cursor) {
+      count++;
+      cursor = await cursor.continue();
+    }
+  } catch {
+    // Index may not exist yet in some environments
+    const all = await db.getAll("items");
+    for (const it of all) if ((it as any).bookmarked === true) count++;
+  }
+  return count;
+}
+
+export async function toggleBookmark(id: string): Promise<SavedItem | null> {
+  const db = await getDB();
+  const existing = await db.get("items", id);
+  if (!existing) return null;
+  const next: SavedItem = { ...existing, bookmarked: !existing.bookmarked };
+  await db.put("items", next);
+  return next;
+}
+
+export async function listByStatus(status: "unread" | "in_progress" | "done"): Promise<SavedItem[]> {
+  const db = await getDB();
+  const results: SavedItem[] = [];
+  let cursor = await db.transaction("items").store.index("by_status").openCursor(status);
+  while (cursor) {
+    results.push(cursor.value as SavedItem);
+    cursor = await cursor.continue();
+  }
+  return results;
+}
+
+export async function listBookmarked(): Promise<SavedItem[]> {
+  const db = await getDB();
+  try {
+    const results: SavedItem[] = [];
+    let cursor = await db.transaction("items").store.index("by_bookmarked").openCursor(true);
+    while (cursor) {
+      results.push(cursor.value as SavedItem);
+      cursor = await cursor.continue();
+    }
+    return results;
+  } catch {
+    const all = await db.getAll("items");
+    return all.filter((it: any) => it.bookmarked === true) as SavedItem[];
+  }
 }
 
 // --- Tag helpers ---
