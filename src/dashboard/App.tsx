@@ -69,6 +69,13 @@ export default function App() {
     return tabFiltered.filter((it: SavedItem) => (it.title || it.url).toLowerCase().includes(q));
   }, [tabFiltered, query]);
 
+  // When tag feature is disabled, ensure any existing selections are cleared
+  useEffect(() => {
+    if (!enableTags && selectedTags.length > 0) {
+      setSelectedTags([]);
+    }
+  }, [enableTags]);
+
   useEffect(() => {
     void (async () => {
       if (!enableTags || selectedTags.length === 0) {
@@ -76,6 +83,7 @@ export default function App() {
         setItems(all.sort((a, b) => b.savedAt - a.savedAt));
         return;
       }
+      // Use selected tags as-is (canonical casing) to leverage the by_tag index correctly
       const result = andMode
         ? await queryItemsByTagsAND(selectedTags)
         : await queryItemsByTagsOR(selectedTags);
@@ -84,11 +92,16 @@ export default function App() {
   }, [selectedTags, andMode, enableTags]);
 
   function toggleTag(tag: string) {
+    if (!enableTags) return;
+    const lower = tag.trim().toLowerCase();
+    // Map to canonical casing from current tag counts to align with DB index
+    const canonical = (tags.find((t: TagCount) => t.tag.toLowerCase() === lower)?.tag || tag).trim();
     setSelectedTags((prev: string[]) => {
-      const set = new Set(prev);
-      if (set.has(tag)) set.delete(tag);
-      else set.add(tag);
-      return Array.from(set);
+      const had = prev.some((t: string) => t.toLowerCase() === lower);
+      if (had) {
+        return prev.filter((t: string) => t.toLowerCase() !== lower);
+      }
+      return [...prev, canonical];
     });
   }
 
