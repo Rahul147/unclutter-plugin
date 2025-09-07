@@ -11,6 +11,7 @@ import {
   type TagCount,
   updateItem,
   toggleBookmark,
+  deleteItem,
 } from '../db/db';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
@@ -29,12 +30,13 @@ export default function App() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [enableTags, setEnableTags] = useState<boolean>(false);
   const [tab, setTab] = useState<'new' | 'viewed' | 'bookmarked'>('new');
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+  const initialTheme: 'light' | 'dark' = (() => {
     const pref = getTheme();
     if (pref === 'light' || pref === 'dark') return pref;
     const systemDark = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     return systemDark ? 'dark' : 'light';
-  });
+  })();
+  const [theme, setTheme] = useState<'light' | 'dark'>(initialTheme);
   useEffect(() => {
     void (async () => {
       const all = await listItems();
@@ -122,6 +124,23 @@ export default function App() {
     const updated = await toggleBookmark(id);
     if (!updated) return;
     setItems((prev: SavedItem[]) => prev.map((it: SavedItem) => (it.id === id ? updated : it)));
+  }
+
+  async function onDelete(id: string) {
+    const ok = window.confirm('Delete this item?');
+    if (!ok) return;
+    const prevItems = items;
+    setItems((prev: SavedItem[]) => prev.filter((it: SavedItem) => it.id !== id));
+    try {
+      await deleteItem(id);
+      if (enableTags) {
+        const counts = await getTagCounts();
+        setTags(counts);
+      }
+    } catch {
+      setItems(prevItems);
+      alert('Failed to delete');
+    }
   }
 
   function onToggleTheme() {
@@ -244,6 +263,19 @@ export default function App() {
                         {it.bookmarked ? '★' : '☆'}
                       </Button>
                       <a className="btn btn--sm btn--outline" href={it.url} target="_blank" rel="noreferrer" onClick={() => void onOpen(it.id)}>Open</a>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="btn--danger"
+                        title="Delete item"
+                        onClick={(ev: any) => {
+                          ev.stopPropagation();
+                          ev.preventDefault();
+                          void onDelete(it.id);
+                        }}
+                      >
+                        Delete
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
