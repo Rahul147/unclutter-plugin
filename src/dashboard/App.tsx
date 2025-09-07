@@ -28,7 +28,7 @@ export default function App() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [andMode, setAndMode] = useState<boolean>(true);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [enableTags, setEnableTags] = useState<boolean>(false);
+  const [enableTags, setEnableTags] = useState<boolean>(true);
   const [tab, setTab] = useState<'new' | 'viewed' | 'bookmarked'>('new');
   const initialTheme: 'light' | 'dark' = (() => {
     const pref = getTheme();
@@ -42,19 +42,41 @@ export default function App() {
       const all = await listItems();
       setItems(all.sort((a, b) => b.savedAt - a.savedAt));
       try {
-        const { enableTags: flag } = await chrome.storage.local.get({ enableTags: false });
+        const { enableTags: flag } = await chrome.storage.local.get({ enableTags: true });
         const on = Boolean(flag);
         setEnableTags(on);
-        if (on) {
-          const counts = await getTagCounts();
-          setTags(counts);
-        }
       } catch {
-        setEnableTags(false);
+        setEnableTags(true);
+      }
+      try {
+        const counts = await getTagCounts();
+        setTags(counts);
+      } catch {
+        setTags([]);
       }
     })();
     // Note: enableTags is intentionally omitted to avoid double fetching during init
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    function handleStorageChange(changes: any, area: string) {
+      if (area === 'local' && changes && Object.prototype.hasOwnProperty.call(changes, 'enableTags')) {
+        setEnableTags(Boolean(changes.enableTags?.newValue));
+      }
+    }
+    try {
+      chrome.storage.onChanged.addListener(handleStorageChange);
+    } catch {
+      // ignore listener setup errors
+    }
+    return () => {
+      try {
+        chrome.storage.onChanged.removeListener(handleStorageChange);
+      } catch {
+        // ignore
+      }
+    };
   }, []);
 
   const [query, setQuery] = useState('');
@@ -143,10 +165,8 @@ export default function App() {
     setItems((prev: SavedItem[]) => prev.filter((it: SavedItem) => it.id !== id));
     try {
       await deleteItem(id);
-      if (enableTags) {
-        const counts = await getTagCounts();
-        setTags(counts);
-      }
+      const counts = await getTagCounts();
+      setTags(counts);
     } catch {
       setItems(prevItems);
       alert('Failed to delete');
@@ -248,11 +268,13 @@ export default function App() {
                         {(it.tags || []).map((t: string) => (
                           <Badge key={t} variant="secondary">{t}</Badge>
                         ))}
-                        <Button size="sm" variant="ghost" onClick={() => setEditingId((id) => (id === it.id ? null : it.id))}>
-                          {editingId === it.id ? 'Done' : 'Edit tags'}
-                        </Button>
+                        {enableTags && (
+                          <Button size="sm" variant="ghost" onClick={() => setEditingId((id) => (id === it.id ? null : it.id))}>
+                            {editingId === it.id ? 'Done' : 'Edit tags'}
+                          </Button>
+                        )}
                       </div>
-                      {editingId === it.id && (
+                      {enableTags && editingId === it.id && (
                         <div style={{ marginTop: 8 }}>
                           <TagEditor
                             value={it.tags || []}
