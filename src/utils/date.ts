@@ -11,6 +11,40 @@ export function formatRelativeDays(
   return `${days} days ago`;
 }
 
+// New unified helper providing minute/hour/day granularity.
+export function formatRelativeAgo(
+  savedAt: number,
+  now: number = Date.now()
+): string {
+  if (!Number.isFinite(savedAt)) return "";
+  const diffMs = Math.max(0, now - savedAt);
+
+  const minuteMs = 60_000;
+  const hourMs = 3_600_000;
+  const dayMs = 86_400_000;
+
+  // Clamp very recent and future times to minimum label of 1 minute ago
+  if (diffMs < minuteMs) {
+    return "1 minute ago";
+  }
+
+  if (diffMs < hourMs) {
+    const minutes = Math.max(1, Math.floor(diffMs / minuteMs));
+    const unit = minutes === 1 ? "minute" : "minutes";
+    return `${minutes} ${unit} ago`;
+  }
+
+  if (diffMs < dayMs) {
+    const hours = Math.floor(diffMs / hourMs);
+    const unit = hours === 1 ? "hour" : "hours";
+    return `${hours} ${unit} ago`;
+  }
+
+  const days = Math.floor(diffMs / dayMs);
+  const unit = days === 1 ? "day" : "days";
+  return `${days} ${unit} ago`;
+}
+
 function getOrdinalSuffix(day: number): string {
   const mod10 = day % 10;
   const mod100 = day % 100;
