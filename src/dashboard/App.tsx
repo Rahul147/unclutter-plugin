@@ -5,8 +5,6 @@ import {
   getTagCounts,
   queryItemsByTagsAND,
   queryItemsByTagsOR,
-  addTagToItem,
-  removeTagFromItem,
   setTagsForItem,
   type TagCount,
   updateItem,

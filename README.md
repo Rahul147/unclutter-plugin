@@ -3,16 +3,19 @@
 Bootstrap repository for a Chrome extension (default branch: `main`).
 
 ## Development
+
 - Build your source into `dist/` (ignored by git).
 - Load the unpacked extension via `chrome://extensions` → Enable Developer Mode → Load unpacked → select the project root or `dist/` as appropriate.
 
 ## Theme
+
 - The UI supports light and dark themes with a deep black/white palette.
 - Toggle the theme from the Dashboard and Options headers using the moon/sun button.
 - Preference persists via `localStorage` key `unclutter.theme` across pages.
 - If no preference is saved, the UI follows the system `prefers-color-scheme`.
 
 ## Categories and Bookmarking
+
 - New: items with status `unread`.
 - Viewed: items with status `done` (marked when you open from the dashboard).
 - Bookmarked: items with `bookmarked = true`. Toggle the star on a card to bookmark.
@@ -21,6 +24,7 @@ Bootstrap repository for a Chrome extension (default branch: `main`).
 Opening a saved item from the dashboard marks it as viewed and updates `lastOpenedAt`.
 
 ## Tagging
+
 - Edit tags inline on each card using the "Edit tags" / "Done" toggle.
 - Tags render as chips; click the × on a chip to remove it. When the input is empty, Backspace removes the last chip.
 - Type to see autocomplete suggestions from all tags (excluding ones already added). Navigate with ArrowUp/ArrowDown and press Enter to add; Tab and Comma also add.
@@ -29,9 +33,19 @@ Opening a saved item from the dashboard marks it as viewed and updates `lastOpen
 - Accessibility: input uses combobox with listbox suggestions; additions and removals are announced via a live region.
 
 ## Packaging
+
 - Keep any private keys (e.g., `key.pem`) out of version control.
 - Package artifacts like `.crx` or `.zip` are ignored by the `.gitignore`.
 
 ## Git
+
 - Default branch is `main`.
 - Global `user.name` / `user.email` will be used for commits.
+
+## Code Style & Maintenance
+
+- Unused function parameters are prefixed with `_` to preserve arity and public APIs.
+- Type-only imports are used where safe (e.g., `import type { X } from '...'`) to avoid runtime side effects.
+- Deprecated exports that are not referenced in the repo are retained with `@deprecated` JSDoc for compatibility.
+- Imports are grouped (built-in → external → internal) and unused specifiers removed when unambiguous.
+- Keep try/catch behavior unchanged; normalize minor log messages only if needed.

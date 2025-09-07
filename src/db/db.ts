@@ -1,4 +1,11 @@
-import { openDB, DBSchema, IDBPDatabase, IDBPTransaction } from "idb";
+// IndexedDB access layer for unclutter. Provides CRUD utilities, tag helpers,
+// and a small set of count/query helpers. Keep signatures stable.
+import {
+  openDB,
+  type DBSchema,
+  type IDBPDatabase,
+  type IDBPTransaction,
+} from "idb";
 
 export type SavedItem = {
   id: string;
@@ -49,6 +56,7 @@ interface UnclutterDB extends DBSchema {
 
 let dbPromise: Promise<IDBPDatabase<UnclutterDB>> | null = null;
 
+// --- Database bootstrap ---
 export function getDB(): Promise<IDBPDatabase<UnclutterDB>> {
   if (!dbPromise) {
     dbPromise = openDB<UnclutterDB>("unclutter", 3, {
@@ -65,14 +73,20 @@ export function getDB(): Promise<IDBPDatabase<UnclutterDB>> {
           items.createIndex("by_category", "category", { unique: false });
           items.createIndex("by_domainHash", "domainHash", { unique: false });
           // v2 will add by_tag; if we create fresh at v2+, also create by_tag now
-          items.createIndex("by_tag", "tags", { unique: false, multiEntry: true });
+          items.createIndex("by_tag", "tags", {
+            unique: false,
+            multiEntry: true,
+          });
           // v3 adds bookmark support
           items.createIndex("by_bookmarked", "bookmarked", { unique: false });
           db.createObjectStore("settings", { keyPath: "dbVersion" });
         } else if (oldVersion < 2) {
           const items = tx.objectStore("items");
           // Add multiEntry index for tags
-          items.createIndex("by_tag", "tags", { unique: false, multiEntry: true });
+          items.createIndex("by_tag", "tags", {
+            unique: false,
+            multiEntry: true,
+          });
         } else if (oldVersion < 3) {
           const items = tx.objectStore("items");
           // Add index for bookmarked
@@ -98,6 +112,7 @@ export function getDB(): Promise<IDBPDatabase<UnclutterDB>> {
   return dbPromise!;
 }
 
+// --- Core CRUD ---
 export async function addItem(item: SavedItem): Promise<void> {
   const db = await getDB();
   await db.put("items", item);
@@ -123,6 +138,10 @@ export async function deleteItem(id: string): Promise<void> {
   await db.delete("items", id);
 }
 
+// --- Counts (deprecated in favor of in-memory counts on dashboard) ---
+/**
+ * @deprecated Retained for compatibility. Not referenced in repo; compute counts in UI instead.
+ */
 export async function countUnread(): Promise<number> {
   const db = await getDB();
   let count = 0;
@@ -137,10 +156,18 @@ export async function countUnread(): Promise<number> {
   return count;
 }
 
-export async function countByStatus(status: "unread" | "in_progress" | "done"): Promise<number> {
+/**
+ * @deprecated Retained for compatibility. Not referenced in repo; compute counts in UI instead.
+ */
+export async function countByStatus(
+  status: "unread" | "in_progress" | "done"
+): Promise<number> {
   const db = await getDB();
   let count = 0;
-  let cursor = await db.transaction("items").store.index("by_status").openCursor(status);
+  let cursor = await db
+    .transaction("items")
+    .store.index("by_status")
+    .openCursor(status);
   while (cursor) {
     count++;
     cursor = await cursor.continue();
@@ -148,11 +175,17 @@ export async function countByStatus(status: "unread" | "in_progress" | "done"): 
   return count;
 }
 
+/**
+ * @deprecated Retained for compatibility. Not referenced in repo; prefer UI filter.
+ */
 export async function countBookmarked(): Promise<number> {
   const db = await getDB();
   let count = 0;
   try {
-    let cursor = await db.transaction("items").store.index("by_bookmarked").openCursor(true);
+    let cursor = await db
+      .transaction("items")
+      .store.index("by_bookmarked")
+      .openCursor(true);
     while (cursor) {
       count++;
       cursor = await cursor.continue();
@@ -174,10 +207,19 @@ export async function toggleBookmark(id: string): Promise<SavedItem | null> {
   return next;
 }
 
-export async function listByStatus(status: "unread" | "in_progress" | "done"): Promise<SavedItem[]> {
+// --- Listing helpers (deprecated) ---
+/**
+ * @deprecated Retained for compatibility. Not referenced in repo; use in-memory filters.
+ */
+export async function listByStatus(
+  status: "unread" | "in_progress" | "done"
+): Promise<SavedItem[]> {
   const db = await getDB();
   const results: SavedItem[] = [];
-  let cursor = await db.transaction("items").store.index("by_status").openCursor(status);
+  let cursor = await db
+    .transaction("items")
+    .store.index("by_status")
+    .openCursor(status);
   while (cursor) {
     results.push(cursor.value as SavedItem);
     cursor = await cursor.continue();
@@ -185,11 +227,17 @@ export async function listByStatus(status: "unread" | "in_progress" | "done"): P
   return results;
 }
 
+/**
+ * @deprecated Retained for compatibility. Not referenced in repo; use in-memory filters.
+ */
 export async function listBookmarked(): Promise<SavedItem[]> {
   const db = await getDB();
   try {
     const results: SavedItem[] = [];
-    let cursor = await db.transaction("items").store.index("by_bookmarked").openCursor(true);
+    let cursor = await db
+      .transaction("items")
+      .store.index("by_bookmarked")
+      .openCursor(true);
     while (cursor) {
       results.push(cursor.value as SavedItem);
       cursor = await cursor.continue();
@@ -209,7 +257,10 @@ export async function getTagCounts(): Promise<TagCount[]> {
   const db = await getDB();
   const counts = new Map<string, number>();
   try {
-    let cursor = await db.transaction("items").store.index("by_tag").openCursor();
+    let cursor = await db
+      .transaction("items")
+      .store.index("by_tag")
+      .openCursor();
     while (cursor) {
       const tagKey = String(cursor.key || "");
       if (tagKey) counts.set(tagKey, (counts.get(tagKey) || 0) + 1);
@@ -232,7 +283,9 @@ export async function getTagCounts(): Promise<TagCount[]> {
 
 export async function queryItemsByTagsOR(tags: string[]): Promise<SavedItem[]> {
   const db = await getDB();
-  const desired = Array.from(new Set(tags.map((t: string) => t.trim()).filter(Boolean)));
+  const desired = Array.from(
+    new Set(tags.map((t: string) => t.trim()).filter(Boolean))
+  );
   if (desired.length === 0) return db.getAll("items");
   const byId = new Map<string, SavedItem>();
   try {
@@ -251,13 +304,19 @@ export async function queryItemsByTagsOR(tags: string[]): Promise<SavedItem[]> {
     // Fallback to in-memory filter
     const all = await db.getAll("items");
     const lower = new Set(desired.map((t: string) => t.toLowerCase()));
-    return all.filter((it: SavedItem) => it.tags?.some((t: string) => lower.has(t.toLowerCase())));
+    return all.filter((it: SavedItem) =>
+      it.tags?.some((t: string) => lower.has(t.toLowerCase()))
+    );
   }
 }
 
-export async function queryItemsByTagsAND(tags: string[]): Promise<SavedItem[]> {
+export async function queryItemsByTagsAND(
+  tags: string[]
+): Promise<SavedItem[]> {
   const db = await getDB();
-  const desired = Array.from(new Set(tags.map((t: string) => t.trim()).filter(Boolean)));
+  const desired = Array.from(
+    new Set(tags.map((t: string) => t.trim()).filter(Boolean))
+  );
   if (desired.length === 0) return db.getAll("items");
   try {
     const tx = db.transaction("items");
@@ -296,7 +355,10 @@ export async function queryItemsByTagsAND(tags: string[]): Promise<SavedItem[]> 
   }
 }
 
-export async function addTagToItem(id: string, tag: string): Promise<SavedItem | null> {
+export async function addTagToItem(
+  id: string,
+  tag: string
+): Promise<SavedItem | null> {
   const clean = tag.trim();
   if (!clean) return null;
   const db = await getDB();
@@ -308,7 +370,10 @@ export async function addTagToItem(id: string, tag: string): Promise<SavedItem |
   return next;
 }
 
-export async function removeTagFromItem(id: string, tag: string): Promise<SavedItem | null> {
+export async function removeTagFromItem(
+  id: string,
+  tag: string
+): Promise<SavedItem | null> {
   const db = await getDB();
   const existing = await db.get("items", id);
   if (!existing) return null;
@@ -319,11 +384,16 @@ export async function removeTagFromItem(id: string, tag: string): Promise<SavedI
   return next;
 }
 
-export async function setTagsForItem(id: string, tags: string[]): Promise<SavedItem | null> {
+export async function setTagsForItem(
+  id: string,
+  tags: string[]
+): Promise<SavedItem | null> {
   const db = await getDB();
   const existing = await db.get("items", id);
   if (!existing) return null;
-  const nextTags = Array.from(new Set(tags.map((t: string) => t.trim()).filter(Boolean)));
+  const nextTags = Array.from(
+    new Set(tags.map((t: string) => t.trim()).filter(Boolean))
+  );
   const next: SavedItem = { ...existing, tags: nextTags };
   await db.put("items", next);
   return next;
