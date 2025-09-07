@@ -2,13 +2,22 @@
 import { addItem, type SavedItem } from "../db/db";
 import { normalizeUrl, hashStringFNV1a } from "../utils/url";
 
-chrome.runtime.onInstalled.addListener(() => {
+chrome.runtime.onInstalled.addListener(async () => {
   // Set up context menu
   chrome.contextMenus.create({
     id: "save-to-unclutter",
     title: "Save to unclutter",
     contexts: ["page", "link"],
   });
+  // Ensure default settings for tags are enabled on first run
+  try {
+    const data = await chrome.storage.local.get({ enableTags: undefined });
+    if (typeof data.enableTags === "undefined") {
+      await chrome.storage.local.set({ enableTags: true });
+    }
+  } catch {
+    // ignore storage errors
+  }
 });
 
 chrome.action.onClicked.addListener(async () => {

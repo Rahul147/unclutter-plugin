@@ -5,17 +5,18 @@ import { applyTheme, getTheme } from '../lib/theme';
 
 export default function App() {
   const [enableTags, setEnableTags] = useState<boolean>(false);
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+  const initialTheme: 'light' | 'dark' = (() => {
     const pref = getTheme();
     if (pref === 'light' || pref === 'dark') return pref;
     const systemDark = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     return systemDark ? 'dark' : 'light';
-  });
+  })();
+  const [theme, setTheme] = useState<'light' | 'dark'>(initialTheme);
 
   useEffect(() => {
     void (async () => {
       try {
-        const data = await chrome.storage.local.get({ enableTags: false });
+        const data = await chrome.storage.local.get({ enableTags: true });
         setEnableTags(Boolean(data.enableTags));
       } catch {
         setEnableTags(false);
