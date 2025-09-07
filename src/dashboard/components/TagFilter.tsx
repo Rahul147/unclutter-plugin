@@ -25,18 +25,15 @@ export function TagFilter({ tags, selected, isAndMode, onToggleMode, onToggleTag
           {tags.map(({ tag, count }: TagCount) => {
             const isSelected = selectedSet.has(tag);
             return (
-              <div
+              <Badge
                 key={tag}
-                role="button"
-                aria-pressed={isSelected}
-                onClick={() => onToggleTag(tag.toLowerCase())}
+                variant={isSelected ? "default" : "secondary"}
+                onClick={() => onToggleTag(tag)}
                 style={{ cursor: "pointer" }}
                 title={isSelected ? "Remove filter" : "Filter by tag"}
               >
-                <Badge variant={isSelected ? "default" : "secondary"}>
-                  {tag} <span style={{ opacity: 0.7 }}>({count})</span>
-                </Badge>
-              </div>
+                {tag} <span style={{ opacity: 0.7 }}>({count})</span>
+              </Badge>
             );
           })}
         </div>
