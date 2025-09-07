@@ -9,6 +9,8 @@ import {
   removeTagFromItem,
   setTagsForItem,
   type TagCount,
+  updateItem,
+  toggleBookmark,
 } from '../db/db';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
@@ -25,6 +27,7 @@ export default function App() {
   const [andMode, setAndMode] = useState<boolean>(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [enableTags, setEnableTags] = useState<boolean>(false);
+  const [tab, setTab] = useState<'new' | 'viewed' | 'bookmarked'>('new');
   useEffect(() => {
     void (async () => {
       const all = await listItems();
@@ -45,11 +48,17 @@ export default function App() {
   }, []);
 
   const [query, setQuery] = useState('');
+  const tabFiltered = useMemo(() => {
+    if (tab === 'new') return items.filter((it: SavedItem) => it.status === 'unread');
+    if (tab === 'viewed') return items.filter((it: SavedItem) => it.status === 'done');
+    return items.filter((it: SavedItem) => it.bookmarked === true);
+  }, [items, tab]);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return items;
-    return items.filter((it) => (it.title || it.url).toLowerCase().includes(q));
-  }, [items, query]);
+    if (!q) return tabFiltered;
+    return tabFiltered.filter((it: SavedItem) => (it.title || it.url).toLowerCase().includes(q));
+  }, [tabFiltered, query]);
 
   useEffect(() => {
     void (async () => {
@@ -66,7 +75,7 @@ export default function App() {
   }, [selectedTags, andMode, enableTags]);
 
   function toggleTag(tag: string) {
-    setSelectedTags((prev) => {
+    setSelectedTags((prev: string[]) => {
       const set = new Set(prev);
       if (set.has(tag)) set.delete(tag);
       else set.add(tag);
@@ -83,9 +92,29 @@ export default function App() {
   async function onSetTags(id: string, next: string[]) {
     const updated = await setTagsForItem(id, next);
     if (!updated) return;
-    setItems((prev) => prev.map((it) => (it.id === id ? updated : it)));
+    setItems((prev: SavedItem[]) => prev.map((it: SavedItem) => (it.id === id ? updated : it)));
     const counts = await getTagCounts();
     setTags(counts);
+  }
+
+  const counts = useMemo(() => {
+    const totalNew = items.filter((it: SavedItem) => it.status === 'unread').length;
+    const totalViewed = items.filter((it: SavedItem) => it.status === 'done').length;
+    const totalBookmarked = items.filter((it: SavedItem) => it.bookmarked === true).length;
+    return { totalNew, totalViewed, totalBookmarked };
+  }, [items]);
+
+  async function onOpen(id: string) {
+    const now = Date.now();
+    // Persist and optimistically update UI
+    void updateItem(id, { status: 'done', lastOpenedAt: now });
+    setItems((prev: SavedItem[]) => prev.map((it: SavedItem) => (it.id === id ? { ...it, status: 'done', lastOpenedAt: now } : it)));
+  }
+
+  async function onToggleBookmark(id: string) {
+    const updated = await toggleBookmark(id);
+    if (!updated) return;
+    setItems((prev: SavedItem[]) => prev.map((it: SavedItem) => (it.id === id ? updated : it)));
   }
 
   return (
@@ -99,15 +128,45 @@ export default function App() {
           <Badge variant="secondary">{items.length} saved</Badge>
         </div>
         <Separator />
-        <div className="row" style={{ alignItems: 'center' }}>
-          <Input placeholder="Search saved pages..." value={query} onChange={(e) => setQuery(e.target.value)} />
+        <div className="row" style={{ alignItems: 'center', gap: 8 }}>
+          <div className="tabs" role="tablist">
+            <Button
+              role="tab"
+              aria-selected={tab === 'new'}
+              variant={tab === 'new' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setTab('new')}
+            >
+              New ({counts.totalNew})
+            </Button>
+            <Button
+              role="tab"
+              aria-selected={tab === 'viewed'}
+              variant={tab === 'viewed' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setTab('viewed')}
+            >
+              Viewed ({counts.totalViewed})
+            </Button>
+            <Button
+              role="tab"
+              aria-selected={tab === 'bookmarked'}
+              variant={tab === 'bookmarked' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setTab('bookmarked')}
+            >
+              Bookmarked ({counts.totalBookmarked})
+            </Button>
+          </div>
+          <div style={{ flex: 1 }} />
+          <Input placeholder="Search saved pages..." value={query} onChange={(e: any) => setQuery(e.target.value)} />
         </div>
 
         <TagFilter
           tags={tags}
           selected={selectedTags}
           isAndMode={andMode}
-          onToggleMode={() => setAndMode((v) => !v)}
+          onToggleMode={() => setAndMode((v: boolean) => !v)}
           onToggleTag={toggleTag}
           onClear={clearFilters}
         />
@@ -123,12 +182,12 @@ export default function App() {
           </Card>
         ) : (
           <div className="grid">
-            {filtered.map((it) => (
+            {filtered.map((it: SavedItem) => (
               <Card key={it.id}>
                 <CardContent>
                   <div className="row" style={{ alignItems: 'center' }}>
                     <div style={{ minWidth: 0 }}>
-                      <a href={it.url} target="_blank" rel="noreferrer" className="link truncate">
+                      <a href={it.url} target="_blank" rel="noreferrer" className="link truncate" onClick={() => void onOpen(it.id)}>
                         {it.title || it.url}
                       </a>
                       <span className="meta">{new URL(it.url).hostname}</span>
@@ -151,7 +210,16 @@ export default function App() {
                       )}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <a className="btn btn--sm btn--outline" href={it.url} target="_blank" rel="noreferrer">Open</a>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        aria-pressed={it.bookmarked ? true : false}
+                        title={it.bookmarked ? 'Remove bookmark' : 'Add bookmark'}
+                        onClick={() => void onToggleBookmark(it.id)}
+                      >
+                        {it.bookmarked ? '★' : '☆'}
+                      </Button>
+                      <a className="btn btn--sm btn--outline" href={it.url} target="_blank" rel="noreferrer" onClick={() => void onOpen(it.id)}>Open</a>
                     </div>
                   </div>
                 </CardContent>

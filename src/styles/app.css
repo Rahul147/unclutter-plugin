@@ -51,6 +51,7 @@ body {
 .row { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
 .stack { display: flex; flex-direction: column; gap: 12px; }
 .grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.tabs { display: inline-flex; gap: 6px; }
 
 /* Typography */
 h1.heading { font-size: 24px; font-weight: 600; letter-spacing: -0.01em; margin: 0; }

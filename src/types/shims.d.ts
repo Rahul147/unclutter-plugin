@@ -1,18 +1,21 @@
 // Minimal shims to satisfy TypeScript in environments without installed type packages.
 
 declare namespace JSX {
+  interface IntrinsicAttributes {
+    key?: any;
+  }
   interface IntrinsicElements {
     [elemName: string]: any;
   }
 }
 
 declare module "react" {
-  export type FC<P = {}> = (props: P & { children?: any }) => any;
-  export const useState: any;
-  export const useEffect: any;
-  export const useMemo: any;
-  export const useRef: any;
   export type ReactNode = any;
+  export type FC<P = {}> = (props: P & { children?: ReactNode }) => any;
+  export function useState<T = any>(initial: T): [T, (next: T | ((prev: T) => T)) => void];
+  export function useEffect(effect: () => void | (() => void), deps?: any[]): void;
+  export function useMemo<T = any>(factory: () => T, deps: any[]): T;
+  export function useRef<T = any>(initial?: T | null): { current: T | null };
   const React: any;
   export default React;
 }

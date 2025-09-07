@@ -17,13 +17,13 @@ chrome.action.onClicked.addListener(async () => {
   });
 });
 
-chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+chrome.contextMenus.onClicked.addListener(async (info: any, tab?: any) => {
   if (info.menuItemId === "save-to-unclutter" && tab?.id) {
     void handleSaveForTab(tab.id);
   }
 });
 
-chrome.commands.onCommand.addListener(async (command) => {
+chrome.commands.onCommand.addListener(async (command: string) => {
   if (command === "save-current-page") {
     const [tab] = await chrome.tabs.query({
       active: true,
@@ -35,7 +35,7 @@ chrome.commands.onCommand.addListener(async (command) => {
   }
 });
 
-chrome.runtime.onMessage.addListener((message) => {
+chrome.runtime.onMessage.addListener((message: any) => {
   if (
     message?.type === "save-current-tab" &&
     typeof message.tabId === "number"
@@ -46,9 +46,7 @@ chrome.runtime.onMessage.addListener((message) => {
 
 async function handleSaveForTab(tabId: number): Promise<void> {
   try {
-    const [{ result } = {} as any] = await chrome.scripting.executeScript<{
-      [k: string]: any;
-    }>({
+    const [{ result } = {} as any] = await chrome.scripting.executeScript({
       target: { tabId },
       world: "MAIN",
       func: () => {
@@ -117,6 +115,7 @@ async function handleSaveForTab(tabId: number): Promise<void> {
       savedAt: now,
       lastOpenedAt: null,
       estReadMins: null,
+      bookmarked: false,
       favIconUrl: result.favIconUrl ?? null,
       ogImage: result.ogImage ?? null,
       notes: null,
