@@ -28,7 +28,7 @@ export default function App() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [andMode, setAndMode] = useState<boolean>(true);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [enableTags, setEnableTags] = useState<boolean>(false);
+  const [enableTags, setEnableTags] = useState<boolean>(true);
   const [tab, setTab] = useState<'new' | 'viewed' | 'bookmarked'>('new');
   const initialTheme: 'light' | 'dark' = (() => {
     const pref = getTheme();
@@ -42,11 +42,11 @@ export default function App() {
       const all = await listItems();
       setItems(all.sort((a, b) => b.savedAt - a.savedAt));
       try {
-        const { enableTags: flag } = await chrome.storage.local.get({ enableTags: false });
+        const { enableTags: flag } = await chrome.storage.local.get({ enableTags: true });
         const on = Boolean(flag);
         setEnableTags(on);
       } catch {
-        setEnableTags(false);
+        setEnableTags(true);
       }
       try {
         const counts = await getTagCounts();
