@@ -307,7 +307,7 @@ export default function App() {
                         title={it.bookmarked ? 'Remove bookmark' : 'Add bookmark'}
                         onClick={() => void onToggleBookmark(it.id)}
                       >
-                        {it.bookmarked ? '★' : '☆'}
+                        {it.bookmarked ? '♥' : '♡'}
                       </Button>
                       <a className="btn btn--sm btn--outline" href={it.url} target="_blank" rel="noreferrer" onClick={() => void onOpen(it.id)}>Open</a>
                       <Button
