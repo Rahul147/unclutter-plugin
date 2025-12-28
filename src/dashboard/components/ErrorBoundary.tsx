@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import { type ReactNode } from "react";
 
 import { Button } from "../../components/ui/button";
@@ -20,8 +20,8 @@ export class ErrorBoundary extends React.Component<Props, State> {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error("ErrorBoundary caught an error:", error, errorInfo);
+  componentDidCatch(_error: Error, _errorInfo: React.ErrorInfo) {
+    // Intentionally no console logging in production
   }
 
   handleReload = () => {

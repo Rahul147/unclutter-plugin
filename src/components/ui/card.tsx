@@ -1,5 +1,5 @@
 // Card primitives for simple composition; avoid changing markup/classes.
-import * as React from "react";
+import React from "react";
 
 import { cn } from "../../lib/utils";
 
@@ -46,5 +46,4 @@ const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
 CardFooter.displayName = "CardFooter";
 
 export { Card, CardContent,CardDescription, CardFooter, CardHeader, CardTitle };
-
 

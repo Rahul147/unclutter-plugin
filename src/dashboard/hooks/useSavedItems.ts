@@ -1,5 +1,4 @@
-import * as React from "react";
-const { useCallback, useEffect, useMemo, useState } = React;
+import React from "react";
 
 import {
   deleteItem,
@@ -30,30 +29,30 @@ type UseSavedItemsReturn = {
 };
 
 export function useSavedItems(): UseSavedItemsReturn {
-  const [items, setItems] = useState<SavedItem[]>([]);
-  const [tags, setTags] = useState<TagCount[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [items, setItems] = React.useState<SavedItem[]>([]);
+  const [tags, setTags] = React.useState<TagCount[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
 
-  const refreshItems = useCallback(async () => {
+  const refreshItems = React.useCallback(async () => {
     const all = await listItems();
     setItems(all.sort((a, b) => b.savedAt - a.savedAt));
     const counts = await getTagCounts();
     setTags(counts);
   }, []);
 
-  useEffect(() => {
+  React.useEffect(() => {
     setIsLoading(true);
-    refreshItems().finally(() => setIsLoading(false));
+    void refreshItems().finally(() => setIsLoading(false));
   }, [refreshItems]);
 
-  const counts = useMemo(() => {
+  const counts = React.useMemo(() => {
     const totalNew = items.filter((it) => it.status === "unread").length;
     const totalViewed = items.filter((it) => it.status === "done").length;
     const totalBookmarked = items.filter((it) => it.bookmarked).length;
     return { totalNew, totalViewed, totalBookmarked };
   }, [items]);
 
-  const onOpen = useCallback((id: string) => {
+  const onOpen = React.useCallback((id: string) => {
     const now = Date.now();
     void updateItem(id, { status: "done", lastOpenedAt: now });
     setItems((prev) =>
@@ -63,7 +62,7 @@ export function useSavedItems(): UseSavedItemsReturn {
     );
   }, []);
 
-  const onDelete = useCallback(
+  const onDelete = React.useCallback(
     async (id: string) => {
       const ok = window.confirm("Delete this item?");
       if (!ok) return;
@@ -83,13 +82,13 @@ export function useSavedItems(): UseSavedItemsReturn {
     [items]
   );
 
-  const onToggleBookmark = useCallback(async (id: string) => {
+  const onToggleBookmark = React.useCallback(async (id: string) => {
     const updated = await toggleBookmark(id);
     if (!updated) return;
     setItems((prev) => prev.map((it) => (it.id === id ? updated : it)));
   }, []);
 
-  const onSetTags = useCallback(async (id: string, nextTags: string[]) => {
+  const onSetTags = React.useCallback(async (id: string, nextTags: string[]) => {
     const updated = await setTagsForItem(id, nextTags);
     if (!updated) return;
     setItems((prev) => prev.map((it) => (it.id === id ? updated : it)));
@@ -97,7 +96,7 @@ export function useSavedItems(): UseSavedItemsReturn {
     setTags(counts);
   }, []);
 
-  const filterByTags = useCallback(async (selectedTags: string[], andMode: boolean) => {
+  const filterByTags = React.useCallback(async (selectedTags: string[], andMode: boolean) => {
     if (selectedTags.length === 0) {
       await refreshItems();
       return;

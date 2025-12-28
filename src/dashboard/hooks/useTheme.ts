@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import React from "react";
 
 import { applyTheme, getTheme } from "../../lib/theme";
 
@@ -22,9 +22,9 @@ type UseThemeReturn = {
 };
 
 export function useTheme(): UseThemeReturn {
-  const [theme, setTheme] = useState<Theme>(getInitialTheme);
+  const [theme, setTheme] = React.useState<Theme>(getInitialTheme);
 
-  const toggleTheme = useCallback(() => {
+  const toggleTheme = React.useCallback(() => {
     setTheme((current) => {
       const next = current === "dark" ? "light" : "dark";
       applyTheme(next);

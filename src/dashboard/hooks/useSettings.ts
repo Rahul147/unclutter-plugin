@@ -11,13 +11,13 @@ export function useSettings(): UseSettingsReturn {
     // Load initial setting
     chrome.storage.local
       .get({ enableTags: true })
-      .then((data) => setEnableTags(Boolean(data.enableTags)))
+      .then((data: { enableTags?: unknown }) => setEnableTags(Boolean(data.enableTags)))
       .catch(() => setEnableTags(true));
 
     // Listen for changes
     function handleStorageChange(
       changes: { [key: string]: chrome.storage.StorageChange },
-      area: string
+      area: chrome.storage.AreaName
     ) {
       if (area === "local" && changes.enableTags) {
         setEnableTags(Boolean(changes.enableTags.newValue));

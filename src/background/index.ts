@@ -24,26 +24,31 @@ chrome.runtime.onInstalled.addListener(() => {
     contexts: ["page", "link"],
   });
 
-  chrome.storage.local.get({ enableTags: undefined }).then((data) => {
-    if (typeof data.enableTags === "undefined") {
-      chrome.storage.local.set({ enableTags: true });
-    }
-  });
+  void chrome.storage.local
+    .get({ enableTags: undefined })
+    .then((data: { enableTags?: unknown }) => {
+      if (typeof data.enableTags === "undefined") {
+        void chrome.storage.local.set({ enableTags: true });
+      }
+    })
+    .catch(() => {
+      // ignore
+    });
 });
 
 chrome.action.onClicked.addListener(() => {
-  chrome.tabs.create({
+  void chrome.tabs.create({
     url: chrome.runtime.getURL("src/dashboard/index.html"),
   });
 });
 
-chrome.contextMenus.onClicked.addListener((info, tab) => {
+chrome.contextMenus.onClicked.addListener((info: chrome.contextMenus.OnClickData, tab?: chrome.tabs.Tab) => {
   if (info.menuItemId === "save-to-unclutter" && tab?.id) {
     void handleSaveForTab(tab.id);
   }
 });
 
-chrome.commands.onCommand.addListener(async (command) => {
+chrome.commands.onCommand.addListener(async (command: string) => {
   if (command === "save-current-page") {
     const [tab] = await chrome.tabs.query({
       active: true,
@@ -118,7 +123,7 @@ async function handleSaveForTab(tabId: number): Promise<void> {
     // Check for duplicates
     const existing = await getItemByUrl(normalizedUrl);
     if (existing) {
-      chrome.notifications.create({
+      void chrome.notifications.create({
         type: "basic",
         iconUrl: "/logo_128.png",
         title: "Already saved",
@@ -151,13 +156,14 @@ async function handleSaveForTab(tabId: number): Promise<void> {
 
     await addItem(item);
 
-    chrome.notifications.create({
+    void chrome.notifications.create({
       type: "basic",
       iconUrl: "/logo_128.png",
       title: "Saved to unclutter",
       message: item.title || item.url,
     });
   } catch (err) {
-    console.error("Failed to save tab", err);
+    // eslint-disable-next-line no-console
+    console.error("Failed to save tab:", err);
   }
 }

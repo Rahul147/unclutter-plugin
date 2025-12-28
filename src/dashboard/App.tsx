@@ -5,14 +5,13 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Separator } from "../components/ui/separator";
-import type { SavedItem } from "../db/db";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { ItemCard } from "./components/ItemCard";
 import TagFilter from "./components/TagFilter";
-import { useSavedItems, useSettings, useTagFilter, useTheme, type TabType } from "./hooks";
+import { type TabType,useSavedItems, useSettings, useTagFilter, useTheme } from "./hooks";
 
 function Dashboard() {
-  const { theme, toggleTheme, isDark } = useTheme();
+  const { toggleTheme, isDark } = useTheme();
   const { enableTags } = useSettings();
   const {
     items,
@@ -38,7 +37,7 @@ function Dashboard() {
 
   // Re-fetch when tag filter changes
   useEffect(() => {
-    filterByTags(selectedTags, andMode);
+    void filterByTags(selectedTags, andMode);
   }, [selectedTags, andMode, filterByTags]);
 
   // Filter items by tab

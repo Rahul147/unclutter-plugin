@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import React from "react";
 
 import type { SavedItem } from "../../db/db";
 
@@ -12,10 +12,10 @@ type UseTagFilterReturn = {
 };
 
 export function useTagFilter(): UseTagFilterReturn {
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [andMode, setAndMode] = useState(true);
+  const [selectedTags, setSelectedTags] = React.useState<string[]>([]);
+  const [andMode, setAndMode] = React.useState(true);
 
-  const toggleTag = useCallback((tag: string) => {
+  const toggleTag = React.useCallback((tag: string) => {
     setSelectedTags((prev) => {
       const set = new Set(prev);
       if (set.has(tag)) {
@@ -27,15 +27,15 @@ export function useTagFilter(): UseTagFilterReturn {
     });
   }, []);
 
-  const toggleMode = useCallback(() => {
+  const toggleMode = React.useCallback(() => {
     setAndMode((v) => !v);
   }, []);
 
-  const clearFilters = useCallback(() => {
+  const clearFilters = React.useCallback(() => {
     setSelectedTags([]);
   }, []);
 
-  const filterItems = useCallback(
+  const filterItems = React.useCallback(
     (items: SavedItem[]): SavedItem[] => {
       if (selectedTags.length === 0) return items;
 

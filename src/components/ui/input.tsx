@@ -1,5 +1,5 @@
 // Input primitive; keep attributes and class contract stable.
-import * as React from "react";
+import React from "react";
 
 import { cn } from "../../lib/utils";
 
@@ -20,5 +20,4 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 Input.displayName = "Input";
 
 export { Input };
-
 

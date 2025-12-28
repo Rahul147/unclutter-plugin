@@ -36,10 +36,10 @@ interface UnclutterDB extends DBSchema {
     indexes: {
       by_status: "unread" | "in_progress" | "done";
       by_savedAt: number;
-      by_category: string | null;
+      by_category: string;
       by_domainHash: string;
       by_tag: string;
-      by_bookmarked: boolean;
+      by_bookmarked: number;
     };
   };
   settings: {
@@ -132,7 +132,7 @@ export async function deleteItem(id: string): Promise<void> {
 export async function getItemByUrl(url: string): Promise<SavedItem | null> {
   const db = await getDB();
   const all = await db.getAll("items");
-  return all.find((item) => item.url === url) ?? null;
+  return all.find((item: SavedItem) => item.url === url) ?? null;
 }
 
 export async function toggleBookmark(id: string): Promise<SavedItem | null> {
