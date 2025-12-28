@@ -58,46 +58,43 @@ export function getDB(): Promise<IDBPDatabase<UnclutterDB>> {
         db: IDBPDatabase<UnclutterDB>,
         oldVersion: number,
         _newVersion: number,
-        tx: IDBPTransaction<UnclutterDB, any, "versionchange">
+        tx: IDBPTransaction<UnclutterDB, ArrayLike<"items" | "settings">, "versionchange">
       ) => {
+        // v1: Initial schema
         if (oldVersion < 1) {
           const items = db.createObjectStore("items", { keyPath: "id" });
           items.createIndex("by_status", "status", { unique: false });
           items.createIndex("by_savedAt", "savedAt", { unique: false });
           items.createIndex("by_category", "category", { unique: false });
           items.createIndex("by_domainHash", "domainHash", { unique: false });
-          // v2 will add by_tag; if we create fresh at v2+, also create by_tag now
-          items.createIndex("by_tag", "tags", {
-            unique: false,
-            multiEntry: true,
-          });
-          // v3 adds bookmark support
-          items.createIndex("by_bookmarked", "bookmarked", { unique: false });
           db.createObjectStore("settings", { keyPath: "dbVersion" });
-        } else if (oldVersion < 2) {
+        }
+
+        // v2: Add tags index
+        if (oldVersion < 2) {
+          const items = oldVersion < 1 ? tx.objectStore("items") : tx.objectStore("items");
+          if (!items.indexNames.contains("by_tag")) {
+            items.createIndex("by_tag", "tags", {
+              unique: false,
+              multiEntry: true,
+            });
+          }
+        }
+
+        // v3: Add bookmarked index and backfill
+        if (oldVersion < 3) {
           const items = tx.objectStore("items");
-          // Add multiEntry index for tags
-          items.createIndex("by_tag", "tags", {
-            unique: false,
-            multiEntry: true,
-          });
-        } else if (oldVersion < 3) {
-          const items = tx.objectStore("items");
-          // Add index for bookmarked
-          items.createIndex("by_bookmarked", "bookmarked", { unique: false });
-          // Backfill existing items with bookmarked = false (await within upgrade transaction)
-          try {
-            let cursor = await items.openCursor();
-            while (cursor) {
-              const value: any = cursor.value;
-              if (typeof value.bookmarked !== "boolean") {
-                value.bookmarked = false;
-                await cursor.update(value);
-              }
-              cursor = await cursor.continue();
+          if (!items.indexNames.contains("by_bookmarked")) {
+            items.createIndex("by_bookmarked", "bookmarked", { unique: false });
+          }
+          // Backfill existing items with bookmarked = false
+          let cursor = await items.openCursor();
+          while (cursor) {
+            const value = cursor.value as SavedItem;
+            if (typeof value.bookmarked !== "boolean") {
+              await cursor.update({ ...value, bookmarked: false });
             }
-          } catch {
-            // ignore backfill errors during upgrade
+            cursor = await cursor.continue();
           }
         }
       },
@@ -132,64 +129,10 @@ export async function deleteItem(id: string): Promise<void> {
   await db.delete("items", id);
 }
 
-// --- Counts (deprecated in favor of in-memory counts on dashboard) ---
-/**
- * @deprecated Retained for compatibility. Not referenced in repo; compute counts in UI instead.
- */
-export async function countUnread(): Promise<number> {
+export async function getItemByUrl(url: string): Promise<SavedItem | null> {
   const db = await getDB();
-  let count = 0;
-  let cursor = await db
-    .transaction("items")
-    .store.index("by_status")
-    .openCursor("unread");
-  while (cursor) {
-    count++;
-    cursor = await cursor.continue();
-  }
-  return count;
-}
-
-/**
- * @deprecated Retained for compatibility. Not referenced in repo; compute counts in UI instead.
- */
-export async function countByStatus(
-  status: "unread" | "in_progress" | "done"
-): Promise<number> {
-  const db = await getDB();
-  let count = 0;
-  let cursor = await db
-    .transaction("items")
-    .store.index("by_status")
-    .openCursor(status);
-  while (cursor) {
-    count++;
-    cursor = await cursor.continue();
-  }
-  return count;
-}
-
-/**
- * @deprecated Retained for compatibility. Not referenced in repo; prefer UI filter.
- */
-export async function countBookmarked(): Promise<number> {
-  const db = await getDB();
-  let count = 0;
-  try {
-    let cursor = await db
-      .transaction("items")
-      .store.index("by_bookmarked")
-      .openCursor(true);
-    while (cursor) {
-      count++;
-      cursor = await cursor.continue();
-    }
-  } catch {
-    // Index may not exist yet in some environments
-    const all = await db.getAll("items");
-    for (const it of all) if ((it as any).bookmarked === true) count++;
-  }
-  return count;
+  const all = await db.getAll("items");
+  return all.find((item) => item.url === url) ?? null;
 }
 
 export async function toggleBookmark(id: string): Promise<SavedItem | null> {
@@ -199,48 +142,6 @@ export async function toggleBookmark(id: string): Promise<SavedItem | null> {
   const next: SavedItem = { ...existing, bookmarked: !existing.bookmarked };
   await db.put("items", next);
   return next;
-}
-
-// --- Listing helpers (deprecated) ---
-/**
- * @deprecated Retained for compatibility. Not referenced in repo; use in-memory filters.
- */
-export async function listByStatus(
-  status: "unread" | "in_progress" | "done"
-): Promise<SavedItem[]> {
-  const db = await getDB();
-  const results: SavedItem[] = [];
-  let cursor = await db
-    .transaction("items")
-    .store.index("by_status")
-    .openCursor(status);
-  while (cursor) {
-    results.push(cursor.value as SavedItem);
-    cursor = await cursor.continue();
-  }
-  return results;
-}
-
-/**
- * @deprecated Retained for compatibility. Not referenced in repo; use in-memory filters.
- */
-export async function listBookmarked(): Promise<SavedItem[]> {
-  const db = await getDB();
-  try {
-    const results: SavedItem[] = [];
-    let cursor = await db
-      .transaction("items")
-      .store.index("by_bookmarked")
-      .openCursor(true);
-    while (cursor) {
-      results.push(cursor.value as SavedItem);
-      cursor = await cursor.continue();
-    }
-    return results;
-  } catch {
-    const all = await db.getAll("items");
-    return all.filter((it: any) => it.bookmarked === true) as SavedItem[];
-  }
 }
 
 // --- Tag helpers ---
@@ -347,35 +248,6 @@ export async function queryItemsByTagsAND(
       return lowers.every((t: string) => set.has(t));
     });
   }
-}
-
-export async function addTagToItem(
-  id: string,
-  tag: string
-): Promise<SavedItem | null> {
-  const clean = tag.trim();
-  if (!clean) return null;
-  const db = await getDB();
-  const existing = await db.get("items", id);
-  if (!existing) return null;
-  const nextTags = Array.from(new Set([...(existing.tags || []), clean]));
-  const next: SavedItem = { ...existing, tags: nextTags };
-  await db.put("items", next);
-  return next;
-}
-
-export async function removeTagFromItem(
-  id: string,
-  tag: string
-): Promise<SavedItem | null> {
-  const db = await getDB();
-  const existing = await db.get("items", id);
-  if (!existing) return null;
-  const target = tag.trim();
-  const nextTags = (existing.tags || []).filter((t: string) => t !== target);
-  const next: SavedItem = { ...existing, tags: nextTags };
-  await db.put("items", next);
-  return next;
 }
 
 export async function setTagsForItem(
