@@ -50,6 +50,15 @@ interface UnclutterDB extends DBSchema {
 
 let dbPromise: Promise<IDBPDatabase<UnclutterDB>> | null = null;
 
+// Reset database connection (for testing)
+export async function resetDBConnection(): Promise<void> {
+  if (dbPromise) {
+    const db = await dbPromise;
+    db.close();
+  }
+  dbPromise = null;
+}
+
 // --- Database bootstrap ---
 export function getDB(): Promise<IDBPDatabase<UnclutterDB>> {
   if (!dbPromise) {

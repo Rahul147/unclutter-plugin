@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "build": "vite build",
     "dev": "vite",
     "preview": "vite preview",
@@ -19,6 +20,7 @@
   "private": "true",
   "devDependencies": {
     "@crxjs/vite-plugin": "^2.2.0",
+    "@testing-library/react": "^16.3.1",
     "@types/chrome": "^0.1.32",
     "@types/node": "^24.3.1",
     "@types/react": "^19.1.12",
@@ -32,9 +34,12 @@
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-simple-import-sort": "^12.1.0",
     "eslint-plugin-unused-imports": "^4.1.4",
+    "fake-indexeddb": "^6.2.5",
+    "jsdom": "^27.4.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2",
-    "vite": "^7.1.4"
+    "vite": "^7.1.4",
+    "vitest": "^4.0.16"
   },
   "dependencies": {
     "idb": "^8.0.3",
