@@ -358,7 +358,7 @@ describe("useSettings", () => {
 
     it("unmounting one instance does not affect others", async () => {
       const { result: result1 } = renderHook(() => useSettings());
-      const { result: result2, unmount: unmount2 } = renderHook(() => useSettings());
+      const { result: _result2, unmount: unmount2 } = renderHook(() => useSettings());
 
       await waitFor(() => {
         expect(storageChangeListeners.length).toBe(2);

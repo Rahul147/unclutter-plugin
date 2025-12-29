@@ -278,7 +278,7 @@ describe("ErrorBoundary", () => {
 
   describe("error message display", () => {
     it("displays short error messages", () => {
-      function ShortError() {
+      function ShortError(): never {
         throw new Error("Short");
       }
 
@@ -293,7 +293,7 @@ describe("ErrorBoundary", () => {
 
     it("displays long error messages", () => {
       const longMessage = "A".repeat(500);
-      function LongError() {
+      function LongError(): never {
         throw new Error(longMessage);
       }
 
@@ -307,7 +307,7 @@ describe("ErrorBoundary", () => {
     });
 
     it("displays error messages with special characters", () => {
-      function SpecialError() {
+      function SpecialError(): never {
         throw new Error("Error: <script>alert('xss')</script> & \"quotes\"");
       }
 
@@ -324,7 +324,7 @@ describe("ErrorBoundary", () => {
     });
 
     it("displays error messages with newlines", () => {
-      function MultilineError() {
+      function MultilineError(): never {
         throw new Error("Line 1\nLine 2\nLine 3");
       }
 
@@ -340,7 +340,7 @@ describe("ErrorBoundary", () => {
     });
 
     it("handles error without message gracefully", () => {
-      function EmptyError() {
+      function EmptyError(): never {
         throw new Error("");
       }
 
@@ -357,7 +357,7 @@ describe("ErrorBoundary", () => {
 
   describe("edge cases", () => {
     it("handles errors during initial render", () => {
-      function InitialRenderError() {
+      function InitialRenderError(): never {
         throw new Error("Initial render error");
       }
 

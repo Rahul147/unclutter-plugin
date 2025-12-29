@@ -76,9 +76,25 @@ export function TagEditor({ value, suggestions, onChange }: TagEditorProps) {
   function addMany(input: string) {
     const parts = input.split(/[;,]/).map((p) => p.trim()).filter(Boolean);
     if (parts.length === 0) return;
+
+    // Batch all valid tags together to avoid stale closure issues
+    const newTags: string[] = [];
+    const existingLower = new Set(value.map((t) => t.toLowerCase()));
+
     for (const part of parts) {
-      if (value.length >= MAX_TAGS_PER_ITEM) break;
-      addOne(part, { silent: true });
+      if (value.length + newTags.length >= MAX_TAGS_PER_ITEM) {
+        setHintMessage("Maximum 20 tags per item.");
+        break;
+      }
+      if (part.length > MAX_TAG_LENGTH) continue;
+      if (existingLower.has(part.toLowerCase())) continue;
+      if (newTags.some((t) => t.toLowerCase() === part.toLowerCase())) continue;
+      newTags.push(part);
+      existingLower.add(part.toLowerCase());
+    }
+
+    if (newTags.length > 0) {
+      onChange([...value, ...newTags]);
     }
     setQuery("");
     setIsOpen(false);
@@ -97,8 +113,16 @@ export function TagEditor({ value, suggestions, onChange }: TagEditorProps) {
   function commitCurrent() {
     if (isOpen && activeIndex >= 0 && activeIndex < filtered.length) {
       addOne(filtered[activeIndex]);
+      setQuery("");
+      setIsOpen(false);
     } else if (query.trim()) {
-      addMany(query);
+      // For single tags (no comma/semicolon), use addOne to show validation hints
+      if (!query.includes(",") && !query.includes(";")) {
+        addOne(query);
+        setQuery("");
+      } else {
+        addMany(query);
+      }
     }
   }
 
@@ -116,13 +140,13 @@ export function TagEditor({ value, suggestions, onChange }: TagEditorProps) {
     }
     if (e.key === "ArrowDown" && filtered.length > 0) {
       e.preventDefault();
-      setActiveIndex((activeIndex + 1) % filtered.length);
+      setActiveIndex((i) => (i + 1) % filtered.length);
       setIsOpen(true);
       return;
     }
     if (e.key === "ArrowUp" && filtered.length > 0) {
       e.preventDefault();
-      setActiveIndex((activeIndex - 1 + filtered.length) % filtered.length);
+      setActiveIndex((i) => (i - 1 + filtered.length) % filtered.length);
       setIsOpen(true);
       return;
     }

@@ -379,12 +379,11 @@ describe("db", () => {
         const originalStore = tx.store;
         Object.defineProperty(tx, "store", {
           get() {
-            return {
-              ...originalStore,
+            return Object.assign({}, originalStore, {
               index: () => {
                 throw new Error("Simulated index missing");
               },
-            };
+            });
           },
         });
         return tx;
@@ -417,12 +416,11 @@ describe("db", () => {
         const originalStore = tx.store;
         Object.defineProperty(tx, "store", {
           get() {
-            return {
-              ...originalStore,
+            return Object.assign({}, originalStore, {
               index: () => {
                 throw new Error("Simulated index missing");
               },
-            };
+            });
           },
         });
         return tx;
@@ -456,12 +454,11 @@ describe("db", () => {
         const originalStore = tx.store;
         Object.defineProperty(tx, "store", {
           get() {
-            return {
-              ...originalStore,
+            return Object.assign({}, originalStore, {
               index: () => {
                 throw new Error("Simulated index missing");
               },
-            };
+            });
           },
         });
         return tx;
