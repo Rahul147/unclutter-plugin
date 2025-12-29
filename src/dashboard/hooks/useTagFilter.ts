@@ -2,16 +2,7 @@ import React from "react";
 
 import type { SavedItem } from "../../db/db";
 
-type UseTagFilterReturn = {
-  selectedTags: string[];
-  andMode: boolean;
-  toggleTag: (tag: string) => void;
-  toggleMode: () => void;
-  clearFilters: () => void;
-  filterItems: (items: SavedItem[]) => SavedItem[];
-};
-
-export function useTagFilter(): UseTagFilterReturn {
+export function useTagFilter() {
   const [selectedTags, setSelectedTags] = React.useState<string[]>([]);
   const [andMode, setAndMode] = React.useState(true);
 

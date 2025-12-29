@@ -15,13 +15,7 @@ function getInitialTheme(): Theme {
   return systemDark ? "dark" : "light";
 }
 
-type UseThemeReturn = {
-  theme: Theme;
-  toggleTheme: () => void;
-  isDark: boolean;
-};
-
-export function useTheme(): UseThemeReturn {
+export function useTheme() {
   const [theme, setTheme] = React.useState<Theme>(getInitialTheme);
 
   const toggleTheme = React.useCallback(() => {

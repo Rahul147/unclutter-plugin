@@ -1,8 +1,12 @@
 // Utility to compose className strings from primitives, arrays, or dictionaries.
-type ClassPrimitive = string | number | boolean | null | undefined;
-type ClassDictionary = Record<string, boolean | undefined | null>;
-type ClassArray = Array<ClassPrimitive | ClassDictionary | ClassArray>;
-export type ClassValue = ClassPrimitive | ClassDictionary | ClassArray;
+export type ClassValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | Record<string, boolean | undefined | null>
+  | ClassValue[];
 
 function toClassName(value: ClassValue): string {
   if (!value) return "";

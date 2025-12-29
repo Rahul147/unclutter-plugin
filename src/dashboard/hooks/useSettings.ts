@@ -1,10 +1,6 @@
 import { useEffect, useState } from "react";
 
-type UseSettingsReturn = {
-  enableTags: boolean;
-};
-
-export function useSettings(): UseSettingsReturn {
+export function useSettings() {
   const [enableTags, setEnableTags] = useState(true);
 
   useEffect(() => {

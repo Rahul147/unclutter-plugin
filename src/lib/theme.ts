@@ -1,4 +1,4 @@
-// Theme preference helpers for light/dark mode. Safe DOM/localStorage access.
+// Theme preference helpers for light/dark mode.
 export type ThemePreference = "light" | "dark" | null;
 
 const STORAGE_KEY = "unclutter.theme";
@@ -8,46 +8,34 @@ export function getTheme(): ThemePreference {
     const value = localStorage.getItem(STORAGE_KEY);
     if (value === "light" || value === "dark") return value;
   } catch {
-    // ignore storage access errors
+    // localStorage may be disabled in private browsing
   }
   return null;
 }
 
 export function applyTheme(theme: ThemePreference): void {
-  try {
-    if (theme === "light" || theme === "dark") {
-      document.documentElement.dataset.theme = theme;
-      try {
-        localStorage.setItem(STORAGE_KEY, theme);
-      } catch {
-        // ignore storage write errors
-      }
-    } else {
-      delete document.documentElement.dataset.theme;
-      try {
-        localStorage.removeItem(STORAGE_KEY);
-      } catch {
-        // ignore storage write errors
-      }
+  if (theme === "light" || theme === "dark") {
+    document.documentElement.dataset.theme = theme;
+    try {
+      localStorage.setItem(STORAGE_KEY, theme);
+    } catch {
+      // localStorage may be disabled in private browsing
     }
-  } catch {
-    // ignore DOM access errors
+  } else {
+    delete document.documentElement.dataset.theme;
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // localStorage may be disabled in private browsing
+    }
   }
 }
 
 export function initTheme(): void {
   const pref = getTheme();
   if (pref === "light" || pref === "dark") {
-    try {
-      document.documentElement.dataset.theme = pref;
-    } catch {
-      // ignore DOM access errors
-    }
+    document.documentElement.dataset.theme = pref;
   } else {
-    try {
-      delete document.documentElement.dataset.theme;
-    } catch {
-      // ignore DOM access errors
-    }
+    delete document.documentElement.dataset.theme;
   }
 }
