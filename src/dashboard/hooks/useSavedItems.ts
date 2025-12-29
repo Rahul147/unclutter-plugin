@@ -15,20 +15,7 @@ import {
 
 export type TabType = "new" | "viewed" | "bookmarked";
 
-type UseSavedItemsReturn = {
-  items: SavedItem[];
-  tags: TagCount[];
-  isLoading: boolean;
-  counts: { totalNew: number; totalViewed: number; totalBookmarked: number };
-  onOpen: (id: string) => void;
-  onDelete: (id: string) => Promise<void>;
-  onToggleBookmark: (id: string) => Promise<void>;
-  onSetTags: (id: string, tags: string[]) => Promise<void>;
-  refreshItems: () => Promise<void>;
-  filterByTags: (tags: string[], andMode: boolean) => Promise<void>;
-};
-
-export function useSavedItems(): UseSavedItemsReturn {
+export function useSavedItems() {
   const [items, setItems] = React.useState<SavedItem[]>([]);
   const [tags, setTags] = React.useState<TagCount[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);

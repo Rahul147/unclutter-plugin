@@ -99,9 +99,8 @@ export function getDB(): Promise<IDBPDatabase<UnclutterDB>> {
           // Backfill existing items with bookmarked = false
           let cursor = await items.openCursor();
           while (cursor) {
-            const value = cursor.value as SavedItem;
-            if (typeof value.bookmarked !== "boolean") {
-              await cursor.update({ ...value, bookmarked: false });
+            if (typeof cursor.value.bookmarked !== "boolean") {
+              await cursor.update({ ...cursor.value, bookmarked: false });
             }
             cursor = await cursor.continue();
           }
@@ -141,7 +140,7 @@ export async function deleteItem(id: string): Promise<void> {
 export async function getItemByUrl(url: string): Promise<SavedItem | null> {
   const db = await getDB();
   const all = await db.getAll("items");
-  return all.find((item: SavedItem) => item.url === url) ?? null;
+  return all.find((item) => item.url === url) ?? null;
 }
 
 export async function toggleBookmark(id: string): Promise<SavedItem | null> {
@@ -156,6 +155,11 @@ export async function toggleBookmark(id: string): Promise<SavedItem | null> {
 // --- Tag helpers ---
 
 export type TagCount = { tag: string; count: number };
+
+// Normalize tags: trim, dedupe, remove empty
+function normalizeTags(tags: string[]): string[] {
+  return [...new Set(tags.map((t) => t.trim()).filter(Boolean))];
+}
 
 export async function getTagCounts(): Promise<TagCount[]> {
   const db = await getDB();
@@ -187,9 +191,7 @@ export async function getTagCounts(): Promise<TagCount[]> {
 
 export async function queryItemsByTagsOR(tags: string[]): Promise<SavedItem[]> {
   const db = await getDB();
-  const desired = Array.from(
-    new Set(tags.map((t: string) => t.trim()).filter(Boolean))
-  );
+  const desired = normalizeTags(tags);
   if (desired.length === 0) return db.getAll("items");
   const byId = new Map<string, SavedItem>();
   try {
@@ -198,8 +200,7 @@ export async function queryItemsByTagsOR(tags: string[]): Promise<SavedItem[]> {
     for (const tag of desired) {
       let cursor = await index.openCursor(tag);
       while (cursor) {
-        const item = cursor.value as SavedItem;
-        byId.set(item.id, item);
+        byId.set(cursor.value.id, cursor.value);
         cursor = await cursor.continue();
       }
     }
@@ -207,9 +208,9 @@ export async function queryItemsByTagsOR(tags: string[]): Promise<SavedItem[]> {
   } catch {
     // Fallback to in-memory filter
     const all = await db.getAll("items");
-    const lower = new Set(desired.map((t: string) => t.toLowerCase()));
-    return all.filter((it: SavedItem) =>
-      it.tags?.some((t: string) => lower.has(t.toLowerCase()))
+    const lower = new Set(desired.map((t) => t.toLowerCase()));
+    return all.filter((it) =>
+      it.tags?.some((t) => lower.has(t.toLowerCase()))
     );
   }
 }
@@ -218,9 +219,7 @@ export async function queryItemsByTagsAND(
   tags: string[]
 ): Promise<SavedItem[]> {
   const db = await getDB();
-  const desired = Array.from(
-    new Set(tags.map((t: string) => t.trim()).filter(Boolean))
-  );
+  const desired = normalizeTags(tags);
   if (desired.length === 0) return db.getAll("items");
   try {
     const tx = db.transaction("items");
@@ -232,8 +231,7 @@ export async function queryItemsByTagsAND(
       const idsForTag = new Map<string, SavedItem>();
       let cursor = await index.openCursor(tag);
       while (cursor) {
-        const item = cursor.value as SavedItem;
-        idsForTag.set(item.id, item);
+        idsForTag.set(cursor.value.id, cursor.value);
         cursor = await cursor.continue();
       }
       if (first) {
@@ -251,10 +249,10 @@ export async function queryItemsByTagsAND(
   } catch {
     // Fallback to in-memory AND filter
     const all = await db.getAll("items");
-    const lowers = desired.map((t: string) => t.toLowerCase());
-    return all.filter((it: SavedItem) => {
-      const set = new Set((it.tags || []).map((t: string) => t.toLowerCase()));
-      return lowers.every((t: string) => set.has(t));
+    const lowers = desired.map((t) => t.toLowerCase());
+    return all.filter((it) => {
+      const set = new Set((it.tags || []).map((t) => t.toLowerCase()));
+      return lowers.every((t) => set.has(t));
     });
   }
 }
@@ -266,10 +264,7 @@ export async function setTagsForItem(
   const db = await getDB();
   const existing = await db.get("items", id);
   if (!existing) return null;
-  const nextTags = Array.from(
-    new Set(tags.map((t: string) => t.trim()).filter(Boolean))
-  );
-  const next: SavedItem = { ...existing, tags: nextTags };
+  const next = { ...existing, tags: normalizeTags(tags) };
   await db.put("items", next);
   return next;
 }

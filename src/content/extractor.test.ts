@@ -14,9 +14,9 @@
  * - Edge cases and malformed HTML
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
-import { extractPageMetadata, type ExtractedMetadata } from "./extractor";
+import { extractPageMetadata } from "./extractor";
 
 /**
  * Helper to set up a mock DOM with specified HTML content.

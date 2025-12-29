@@ -15,7 +15,8 @@
 
 import { describe, expect, it } from "vitest";
 
-import { cn, type ClassValue } from "./utils";
+import type { ClassValue } from "./utils";
+import { cn } from "./utils";
 
 describe("cn (className utility)", () => {
   describe("primitive string inputs", () => {

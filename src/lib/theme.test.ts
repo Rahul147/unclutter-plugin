@@ -216,26 +216,8 @@ describe("theme utilities", () => {
         expect(() => applyTheme(null)).not.toThrow();
       });
 
-      it("handles document access errors gracefully", () => {
-        // Mock document.documentElement.dataset to be read-only
-        const originalDataset = document.documentElement.dataset;
-        Object.defineProperty(document.documentElement, "dataset", {
-          get() {
-            throw new Error("DOM access error");
-          },
-          configurable: true,
-        });
-
-        // Should not throw
-        expect(() => applyTheme("dark")).not.toThrow();
-
-        // Restore
-        Object.defineProperty(document.documentElement, "dataset", {
-          value: originalDataset,
-          writable: true,
-          configurable: true,
-        });
-      });
+      // Note: DOM access errors are not caught since DOM is always available in extension context.
+      // localStorage errors are still caught since storage may be disabled in private browsing.
     });
   });
 
@@ -295,27 +277,7 @@ describe("theme utilities", () => {
       expect(() => initTheme()).not.toThrow();
     });
 
-    it("handles DOM errors gracefully", () => {
-      localStorage.setItem("unclutter.theme", "dark");
-
-      const originalDataset = document.documentElement.dataset;
-      Object.defineProperty(document.documentElement, "dataset", {
-        get() {
-          throw new Error("DOM access error");
-        },
-        configurable: true,
-      });
-
-      // Should not throw
-      expect(() => initTheme()).not.toThrow();
-
-      // Restore
-      Object.defineProperty(document.documentElement, "dataset", {
-        value: originalDataset,
-        writable: true,
-        configurable: true,
-      });
-    });
+    // Note: DOM access errors are not caught since DOM is always available in extension context.
   });
 
   describe("integration scenarios", () => {

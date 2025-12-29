@@ -6,11 +6,10 @@ import { cn } from "../../lib/utils";
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "default" | "secondary" | "ghost" | "outline";
   size?: "sm" | "default" | "lg" | "icon";
-  asChild?: boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = "default", size = "default", asChild, ...props }, ref) => {
+  ({ className, variant = "default", size = "default", ...props }, ref) => {
     const classes = cn(
       "btn",
       variant === "secondary" && "btn--secondary",
@@ -22,7 +21,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       className
     );
 
-    // We no longer support Slot/asChild. Encourage using <a className="btn"> if needed.
     return <button className={classes} ref={ref} {...props} />;
   }
 );

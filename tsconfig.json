@@ -24,6 +24,6 @@
       "@/utils/*": ["src/utils/*"]
     }
   },
-  "include": ["src", "manifest.json", "vite.config.ts"],
+  "include": ["src", "manifest.json", "vite.config.ts", "vitest.config.ts"],
   "exclude": ["dist", "node_modules"]
 }

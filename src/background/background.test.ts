@@ -212,6 +212,7 @@ describe("background service worker", () => {
         discarded: false,
         autoDiscardable: true,
         groupId: -1,
+        frozen: false,
       };
 
       onContextMenuClickedCallback(info, tab);
