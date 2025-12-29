@@ -16,6 +16,7 @@ export function TagEditor({ value, suggestions, onChange }: TagEditorProps) {
   const [query, setQuery] = React.useState("");
   const [isOpen, setIsOpen] = React.useState(false);
   const [isFocused, setIsFocused] = React.useState(false);
+  const [isExpanded, setIsExpanded] = React.useState(false);
   const [activeIndex, setActiveIndex] = React.useState(-1);
   const [hint, setHint] = React.useState("");
   const [live, setLive] = React.useState("");
@@ -165,16 +166,29 @@ export function TagEditor({ value, suggestions, onChange }: TagEditorProps) {
 
   const activeOptionId = isOpen && activeIndex >= 0 ? `${listboxId}-opt-${activeIndex}` : undefined;
 
+  // --- Expand/collapse handlers ---
+  function expand() {
+    setIsExpanded(true);
+    setTimeout(() => inputRef.current?.focus(), 0);
+  }
+
+  function collapse() {
+    if (!query.trim()) {
+      setIsExpanded(false);
+      setIsOpen(false);
+    }
+  }
+
   // --- Render ---
   return (
-    <div className="stack" style={{ gap: 8 }}>
+    <>
       <div className="tag-editor">
         {value.map((tag) => (
           <div key={tag} className="tag-chip">
             <span className="tag-chip__label">{tag}</span>
             <button
               type="button"
-              className="tag-chip__remove btn btn--ghost"
+              className="tag-chip__remove"
               aria-label={`Remove ${tag}`}
               onClick={() => remove(tag)}
             >
@@ -182,51 +196,75 @@ export function TagEditor({ value, suggestions, onChange }: TagEditorProps) {
             </button>
           </div>
         ))}
-        <div className="tag-input-wrap">
-          <Input
-            ref={inputRef}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={onKeyDown}
-            onPaste={onPaste}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => window.setTimeout(() => setIsFocused(false), 0)}
-            placeholder="Add a tag…"
+        {isExpanded ? (
+          <div className="tag-input-wrap">
+            <Input
+              ref={inputRef}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") {
+                  setQuery("");
+                  setIsExpanded(false);
+                  setIsOpen(false);
+                  return;
+                }
+                onKeyDown(e);
+              }}
+              onPaste={onPaste}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => {
+                window.setTimeout(() => {
+                  setIsFocused(false);
+                  collapse();
+                }, 150);
+              }}
+              placeholder="Add tag…"
+              aria-label="Add tag"
+              role="combobox"
+              aria-autocomplete="list"
+              aria-expanded={isOpen}
+              aria-controls={listboxId}
+              aria-activedescendant={activeOptionId}
+              className="tag-input input"
+            />
+            {isOpen && (
+              <div id={listboxId} role="listbox" className="autocomplete">
+                {filtered.map((s, idx) => (
+                  <div
+                    key={s}
+                    id={`${listboxId}-opt-${idx}`}
+                    role="option"
+                    aria-selected={idx === activeIndex}
+                    className={`autocomplete__option${idx === activeIndex ? " is-active" : ""}`}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      addOne(s);
+                      setIsOpen(false);
+                      setQuery("");
+                      inputRef.current?.focus();
+                    }}
+                  >
+                    {s}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <button
+            type="button"
+            className="tag-add-btn"
+            onClick={expand}
             aria-label="Add tag"
-            role="combobox"
-            aria-autocomplete="list"
-            aria-expanded={isOpen}
-            aria-controls={listboxId}
-            aria-activedescendant={activeOptionId}
-            className="tag-input"
-          />
-          {isOpen && (
-            <div id={listboxId} role="listbox" className="autocomplete">
-              {filtered.map((s, idx) => (
-                <div
-                  key={s}
-                  id={`${listboxId}-opt-${idx}`}
-                  role="option"
-                  aria-selected={idx === activeIndex}
-                  className={`autocomplete__option${idx === activeIndex ? " is-active" : ""}`}
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    addOne(s);
-                    setIsOpen(false);
-                    setQuery("");
-                    inputRef.current?.focus();
-                  }}
-                >
-                  {s}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+          >
+            +
+          </button>
+        )}
       </div>
       <div className="sr-only" aria-live="polite" aria-atomic="true">{live}</div>
-      <div className="tag-editor__hint" aria-live="polite">{hint}</div>
-    </div>
+      {hint && <div className="tag-editor__hint" aria-live="polite">{hint}</div>}
+    </>
   );
 }
 

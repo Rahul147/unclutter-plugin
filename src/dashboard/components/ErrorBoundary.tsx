@@ -33,7 +33,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
       return (
         <div className="app">
           <div className="container">
-            <Card>
+            <Card className="card--static">
               <CardHeader>
                 <CardTitle>Something went wrong</CardTitle>
               </CardHeader>
@@ -42,16 +42,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
                   An error occurred while loading the dashboard.
                 </p>
                 {this.state.error && (
-                  <pre
-                    style={{
-                      padding: 12,
-                      background: "var(--muted)",
-                      borderRadius: 6,
-                      fontSize: 12,
-                      overflow: "auto",
-                      marginBottom: 16,
-                    }}
-                  >
+                  <pre className="code-block" style={{ marginBottom: 16 }}>
                     {this.state.error.message}
                   </pre>
                 )}

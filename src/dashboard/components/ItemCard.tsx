@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
 
-import { Badge } from "../../components/ui/badge";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
 import type { SavedItem } from "../../db/db";
@@ -26,8 +25,6 @@ export function ItemCard({
   onToggleBookmark,
   onSetTags,
 }: Props) {
-  const [isEditingTags, setIsEditingTags] = useState(false);
-
   const hostname = new URL(item.url).hostname;
   const relativeTime = formatRelativeAgo(item.savedAt);
   const absoluteTime = formatIST(item.savedAt);
@@ -42,13 +39,13 @@ export function ItemCard({
   return (
     <Card>
       <CardContent>
-        <div className="row" style={{ alignItems: "center" }}>
-          <div style={{ minWidth: 0 }}>
+        <div className="row" style={{ alignItems: "flex-start" }}>
+          <div style={{ minWidth: 0, flex: 1 }}>
             <a
               href={item.url}
               target="_blank"
               rel="noreferrer"
-              className="link truncate"
+              className="link truncate item-title"
               onClick={handleClick}
             >
               {item.title || item.url}
@@ -66,25 +63,8 @@ export function ItemCard({
               )}
             </span>
 
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 6 }}>
-              {item.tags.map((tag) => (
-                <Badge key={tag} variant="secondary">
-                  {tag}
-                </Badge>
-              ))}
-              {enableTags && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => setIsEditingTags(!isEditingTags)}
-                >
-                  {isEditingTags ? "Done" : "Edit tags"}
-                </Button>
-              )}
-            </div>
-
-            {enableTags && isEditingTags && (
-              <div style={{ marginTop: 8 }}>
+            {enableTags && (
+              <div style={{ marginTop: 10 }}>
                 <TagEditor
                   value={item.tags}
                   suggestions={allTagNames}
@@ -94,7 +74,7 @@ export function ItemCard({
             )}
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div className="card__actions">
             <Button
               size="icon"
               variant="ghost"

@@ -32,15 +32,28 @@ describe("TagEditor", () => {
     onChange: overrides.onChange ?? vi.fn(),
   });
 
+  // Helper to expand the input (click the + button)
+  async function expandInput() {
+    const addBtn = screen.getByRole("button", { name: "Add tag" });
+    await userEvent.click(addBtn);
+  }
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   describe("rendering", () => {
-    it("renders input with placeholder", () => {
+    it("renders add button when collapsed", () => {
       render(<TagEditor {...createProps()} />);
 
-      expect(screen.getByPlaceholderText("Add a tag…")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Add tag" })).toBeInTheDocument();
+    });
+
+    it("renders input with placeholder when expanded", async () => {
+      render(<TagEditor {...createProps()} />);
+      await expandInput();
+
+      expect(screen.getByPlaceholderText("Add tag…")).toBeInTheDocument();
     });
 
     it("renders existing tags as chips", () => {
@@ -57,11 +70,11 @@ describe("TagEditor", () => {
       expect(removeButtons).toHaveLength(2);
     });
 
-    it("renders empty state when no tags", () => {
+    it("renders add button when no tags", () => {
       render(<TagEditor {...createProps({ value: [] })} />);
 
       expect(screen.queryByText("react")).not.toBeInTheDocument();
-      expect(screen.getByPlaceholderText("Add a tag…")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Add tag" })).toBeInTheDocument();
     });
   });
 
@@ -69,8 +82,9 @@ describe("TagEditor", () => {
     it("adds tag on Enter key", async () => {
       const onChange = vi.fn();
       render(<TagEditor {...createProps({ onChange })} />);
+      await expandInput();
 
-      const input = screen.getByPlaceholderText("Add a tag…");
+      const input = screen.getByPlaceholderText("Add tag…");
       await userEvent.type(input, "newtag{Enter}");
 
       expect(onChange).toHaveBeenCalledWith(["newtag"]);
@@ -79,8 +93,9 @@ describe("TagEditor", () => {
     it("adds tag on Tab key", async () => {
       const onChange = vi.fn();
       render(<TagEditor {...createProps({ onChange })} />);
+      await expandInput();
 
-      const input = screen.getByPlaceholderText("Add a tag…");
+      const input = screen.getByPlaceholderText("Add tag…");
       await userEvent.type(input, "newtag");
       await userEvent.tab();
 
@@ -90,8 +105,9 @@ describe("TagEditor", () => {
     it("adds tag on comma key", async () => {
       const onChange = vi.fn();
       render(<TagEditor {...createProps({ onChange })} />);
+      await expandInput();
 
-      const input = screen.getByPlaceholderText("Add a tag…");
+      const input = screen.getByPlaceholderText("Add tag…");
       await userEvent.type(input, "newtag,");
 
       expect(onChange).toHaveBeenCalledWith(["newtag"]);
@@ -100,8 +116,9 @@ describe("TagEditor", () => {
     it("trims whitespace from tag", async () => {
       const onChange = vi.fn();
       render(<TagEditor {...createProps({ onChange })} />);
+      await expandInput();
 
-      const input = screen.getByPlaceholderText("Add a tag…");
+      const input = screen.getByPlaceholderText("Add tag…");
       await userEvent.type(input, "  newtag  {Enter}");
 
       expect(onChange).toHaveBeenCalledWith(["newtag"]);
@@ -110,8 +127,9 @@ describe("TagEditor", () => {
     it("does not add empty tag", async () => {
       const onChange = vi.fn();
       render(<TagEditor {...createProps({ onChange })} />);
+      await expandInput();
 
-      const input = screen.getByPlaceholderText("Add a tag…");
+      const input = screen.getByPlaceholderText("Add tag…");
       await userEvent.type(input, "   {Enter}");
 
       expect(onChange).not.toHaveBeenCalled();
@@ -119,8 +137,9 @@ describe("TagEditor", () => {
 
     it("clears input after adding tag", async () => {
       render(<TagEditor {...createProps()} />);
+      await expandInput();
 
-      const input = screen.getByPlaceholderText("Add a tag…") as HTMLInputElement;
+      const input = screen.getByPlaceholderText("Add tag…") as HTMLInputElement;
       await userEvent.type(input, "newtag{Enter}");
 
       expect(input.value).toBe("");
@@ -129,8 +148,9 @@ describe("TagEditor", () => {
     it("adds to existing tags", async () => {
       const onChange = vi.fn();
       render(<TagEditor {...createProps({ value: ["existing"], onChange })} />);
+      await expandInput();
 
-      const input = screen.getByPlaceholderText("Add a tag…");
+      const input = screen.getByPlaceholderText("Add tag…");
       await userEvent.type(input, "newtag{Enter}");
 
       expect(onChange).toHaveBeenCalledWith(["existing", "newtag"]);
@@ -151,8 +171,9 @@ describe("TagEditor", () => {
     it("removes last tag on Backspace when input is empty", async () => {
       const onChange = vi.fn();
       render(<TagEditor {...createProps({ value: ["react", "typescript"], onChange })} />);
+      await expandInput();
 
-      const input = screen.getByPlaceholderText("Add a tag…");
+      const input = screen.getByPlaceholderText("Add tag…");
       await userEvent.click(input);
       await userEvent.keyboard("{Backspace}");
 
@@ -162,8 +183,9 @@ describe("TagEditor", () => {
     it("does not remove tag on Backspace when input has text", async () => {
       const onChange = vi.fn();
       render(<TagEditor {...createProps({ value: ["react"], onChange })} />);
+      await expandInput();
 
-      const input = screen.getByPlaceholderText("Add a tag…");
+      const input = screen.getByPlaceholderText("Add tag…");
       await userEvent.type(input, "test");
       await userEvent.keyboard("{Backspace}");
 
@@ -176,8 +198,9 @@ describe("TagEditor", () => {
     it("prevents duplicate tags (case-insensitive)", async () => {
       const onChange = vi.fn();
       render(<TagEditor {...createProps({ value: ["React"], onChange })} />);
+      await expandInput();
 
-      const input = screen.getByPlaceholderText("Add a tag…");
+      const input = screen.getByPlaceholderText("Add tag…");
       await userEvent.type(input, "react{Enter}");
 
       expect(onChange).not.toHaveBeenCalled();
@@ -190,8 +213,9 @@ describe("TagEditor", () => {
     it("enforces maximum tag length of 30 characters", async () => {
       const onChange = vi.fn();
       render(<TagEditor {...createProps({ onChange })} />);
+      await expandInput();
 
-      const input = screen.getByPlaceholderText("Add a tag…");
+      const input = screen.getByPlaceholderText("Add tag…");
       const longTag = "a".repeat(31);
       await userEvent.type(input, `${longTag}{Enter}`);
 
@@ -204,8 +228,9 @@ describe("TagEditor", () => {
     it("allows tag with exactly 30 characters", async () => {
       const onChange = vi.fn();
       render(<TagEditor {...createProps({ onChange })} />);
+      await expandInput();
 
-      const input = screen.getByPlaceholderText("Add a tag…");
+      const input = screen.getByPlaceholderText("Add tag…");
       const exactTag = "a".repeat(30);
       await userEvent.type(input, `${exactTag}{Enter}`);
 
@@ -216,8 +241,9 @@ describe("TagEditor", () => {
       const onChange = vi.fn();
       const existingTags = Array.from({ length: 20 }, (_, i) => `tag${i}`);
       render(<TagEditor {...createProps({ value: existingTags, onChange })} />);
+      await expandInput();
 
-      const input = screen.getByPlaceholderText("Add a tag…");
+      const input = screen.getByPlaceholderText("Add tag…");
       await userEvent.type(input, "onemore{Enter}");
 
       expect(onChange).not.toHaveBeenCalled();
@@ -230,8 +256,9 @@ describe("TagEditor", () => {
   describe("autocomplete suggestions", () => {
     it("shows suggestions when typing", async () => {
       render(<TagEditor {...createProps()} />);
+      await expandInput();
 
-      const input = screen.getByPlaceholderText("Add a tag…");
+      const input = screen.getByPlaceholderText("Add tag…");
       await userEvent.type(input, "re");
 
       await waitFor(() => {
@@ -242,8 +269,9 @@ describe("TagEditor", () => {
 
     it("filters suggestions based on input", async () => {
       render(<TagEditor {...createProps()} />);
+      await expandInput();
 
-      const input = screen.getByPlaceholderText("Add a tag…");
+      const input = screen.getByPlaceholderText("Add tag…");
       await userEvent.type(input, "type");
 
       await waitFor(() => {
@@ -254,8 +282,9 @@ describe("TagEditor", () => {
 
     it("excludes already selected tags from suggestions", async () => {
       render(<TagEditor {...createProps({ value: ["react"] })} />);
+      await expandInput();
 
-      const input = screen.getByPlaceholderText("Add a tag…");
+      const input = screen.getByPlaceholderText("Add tag…");
       await userEvent.type(input, "re");
 
       await waitFor(() => {
@@ -267,8 +296,9 @@ describe("TagEditor", () => {
     it("selects suggestion on click", async () => {
       const onChange = vi.fn();
       render(<TagEditor {...createProps({ onChange })} />);
+      await expandInput();
 
-      const input = screen.getByPlaceholderText("Add a tag…");
+      const input = screen.getByPlaceholderText("Add tag…");
       await userEvent.type(input, "re");
 
       await waitFor(() => {
@@ -282,8 +312,9 @@ describe("TagEditor", () => {
 
     it("navigates suggestions with ArrowDown/ArrowUp", async () => {
       render(<TagEditor {...createProps()} />);
+      await expandInput();
 
-      const input = screen.getByPlaceholderText("Add a tag…");
+      const input = screen.getByPlaceholderText("Add tag…");
       await userEvent.type(input, "t");
 
       await waitFor(() => {
@@ -309,8 +340,9 @@ describe("TagEditor", () => {
     it("selects highlighted suggestion on Enter", async () => {
       const onChange = vi.fn();
       render(<TagEditor {...createProps({ onChange })} />);
+      await expandInput();
 
-      const input = screen.getByPlaceholderText("Add a tag…");
+      const input = screen.getByPlaceholderText("Add tag…");
       await userEvent.type(input, "type");
 
       await waitFor(() => {
@@ -325,8 +357,9 @@ describe("TagEditor", () => {
 
     it("closes suggestions on Escape", async () => {
       render(<TagEditor {...createProps()} />);
+      await expandInput();
 
-      const input = screen.getByPlaceholderText("Add a tag…");
+      const input = screen.getByPlaceholderText("Add tag…");
       await userEvent.type(input, "re");
 
       await waitFor(() => {
@@ -341,8 +374,9 @@ describe("TagEditor", () => {
     it("limits suggestions to 8 items", async () => {
       const manySuggestions = Array.from({ length: 20 }, (_, i) => `tag${i}`);
       render(<TagEditor {...createProps({ suggestions: manySuggestions })} />);
+      await expandInput();
 
-      const input = screen.getByPlaceholderText("Add a tag…");
+      const input = screen.getByPlaceholderText("Add tag…");
       await userEvent.type(input, "tag");
 
       await waitFor(() => {
@@ -356,8 +390,9 @@ describe("TagEditor", () => {
     it("handles pasting comma-separated tags", async () => {
       const onChange = vi.fn();
       render(<TagEditor {...createProps({ onChange })} />);
+      await expandInput();
 
-      const input = screen.getByPlaceholderText("Add a tag…");
+      const input = screen.getByPlaceholderText("Add tag…");
 
       // Simulate paste event
       const pasteData = "react, typescript, testing";
@@ -379,8 +414,9 @@ describe("TagEditor", () => {
     it("handles pasting semicolon-separated tags", async () => {
       const onChange = vi.fn();
       render(<TagEditor {...createProps({ onChange })} />);
+      await expandInput();
 
-      const input = screen.getByPlaceholderText("Add a tag…");
+      const input = screen.getByPlaceholderText("Add tag…");
 
       const pasteData = "react; typescript; testing";
       const clipboardData = {
@@ -397,8 +433,9 @@ describe("TagEditor", () => {
     it("filters empty entries from pasted content", async () => {
       const onChange = vi.fn();
       render(<TagEditor {...createProps({ onChange })} />);
+      await expandInput();
 
-      const input = screen.getByPlaceholderText("Add a tag…");
+      const input = screen.getByPlaceholderText("Add tag…");
 
       const pasteData = "react,,, typescript,  , testing";
       const clipboardData = {
@@ -417,8 +454,9 @@ describe("TagEditor", () => {
   });
 
   describe("accessibility", () => {
-    it("input has combobox role", () => {
+    it("input has combobox role", async () => {
       render(<TagEditor {...createProps()} />);
+      await expandInput();
 
       const input = screen.getByRole("combobox");
       expect(input).toBeInTheDocument();
@@ -426,6 +464,7 @@ describe("TagEditor", () => {
 
     it("input has aria-expanded attribute", async () => {
       render(<TagEditor {...createProps()} />);
+      await expandInput();
 
       const input = screen.getByRole("combobox");
       expect(input).toHaveAttribute("aria-expanded", "false");
@@ -437,8 +476,9 @@ describe("TagEditor", () => {
       });
     });
 
-    it("input has aria-autocomplete attribute", () => {
+    it("input has aria-autocomplete attribute", async () => {
       render(<TagEditor {...createProps()} />);
+      await expandInput();
 
       const input = screen.getByRole("combobox");
       expect(input).toHaveAttribute("aria-autocomplete", "list");
@@ -446,6 +486,7 @@ describe("TagEditor", () => {
 
     it("input has aria-controls pointing to listbox", async () => {
       render(<TagEditor {...createProps()} />);
+      await expandInput();
 
       const input = screen.getByRole("combobox");
       const controlsId = input.getAttribute("aria-controls");
@@ -461,6 +502,7 @@ describe("TagEditor", () => {
 
     it("has aria-activedescendant when option is highlighted", async () => {
       render(<TagEditor {...createProps()} />);
+      await expandInput();
 
       const input = screen.getByRole("combobox");
       await userEvent.type(input, "re");
@@ -492,8 +534,9 @@ describe("TagEditor", () => {
   describe("edge cases", () => {
     it("handles empty suggestions array", async () => {
       render(<TagEditor {...createProps({ suggestions: [] })} />);
+      await expandInput();
 
-      const input = screen.getByPlaceholderText("Add a tag…");
+      const input = screen.getByPlaceholderText("Add tag…");
       await userEvent.type(input, "anything");
 
       // Should not show listbox when no suggestions
@@ -503,8 +546,9 @@ describe("TagEditor", () => {
     it("handles unicode tags", async () => {
       const onChange = vi.fn();
       render(<TagEditor {...createProps({ onChange })} />);
+      await expandInput();
 
-      const input = screen.getByPlaceholderText("Add a tag…");
+      const input = screen.getByPlaceholderText("Add tag…");
       await userEvent.type(input, "日本語{Enter}");
 
       expect(onChange).toHaveBeenCalledWith(["日本語"]);
@@ -513,8 +557,9 @@ describe("TagEditor", () => {
     it("handles tags with special characters", async () => {
       const onChange = vi.fn();
       render(<TagEditor {...createProps({ onChange })} />);
+      await expandInput();
 
-      const input = screen.getByPlaceholderText("Add a tag…");
+      const input = screen.getByPlaceholderText("Add tag…");
       await userEvent.type(input, "c++{Enter}");
 
       expect(onChange).toHaveBeenCalledWith(["c++"]);
@@ -523,8 +568,9 @@ describe("TagEditor", () => {
     it("handles rapid tag addition", async () => {
       const onChange = vi.fn();
       render(<TagEditor {...createProps({ onChange })} />);
+      await expandInput();
 
-      const input = screen.getByPlaceholderText("Add a tag…");
+      const input = screen.getByPlaceholderText("Add tag…");
 
       // Type multiple tags quickly
       await userEvent.type(input, "tag1{Enter}");
@@ -536,8 +582,9 @@ describe("TagEditor", () => {
 
     it("maintains focus on input after adding tag", async () => {
       render(<TagEditor {...createProps()} />);
+      await expandInput();
 
-      const input = screen.getByPlaceholderText("Add a tag…");
+      const input = screen.getByPlaceholderText("Add tag…");
       await userEvent.type(input, "newtag{Enter}");
 
       expect(document.activeElement).toBe(input);
@@ -545,11 +592,12 @@ describe("TagEditor", () => {
 
     it("maintains focus on input after removing tag via button", async () => {
       render(<TagEditor {...createProps({ value: ["react"] })} />);
+      await expandInput();
 
       const removeButton = screen.getByRole("button", { name: "Remove react" });
       await userEvent.click(removeButton);
 
-      const input = screen.getByPlaceholderText("Add a tag…");
+      const input = screen.getByPlaceholderText("Add tag…");
       expect(document.activeElement).toBe(input);
     });
   });

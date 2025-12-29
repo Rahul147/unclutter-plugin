@@ -455,7 +455,7 @@ describe("ErrorBoundary", () => {
       expect(description).toHaveClass("subtle");
     });
 
-    it("error message pre has proper styling attributes", () => {
+    it("error message pre has proper styling class", () => {
       render(
         <ErrorBoundary>
           <ThrowingComponent />
@@ -463,7 +463,7 @@ describe("ErrorBoundary", () => {
       );
 
       const pre = screen.getByText("Test error message");
-      expect(pre).toHaveStyle({ overflow: "auto" });
+      expect(pre).toHaveClass("code-block");
     });
   });
 });
