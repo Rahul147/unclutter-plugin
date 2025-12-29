@@ -1,6 +1,7 @@
 {
   "name": "unclutter",
   "version": "0.1.0",
+  "description": "A minimal, local-first Chrome extension to save pages and revisit them from a clean, searchable dashboard",
   "main": "index.js",
   "scripts": {
     "test": "vitest run",
@@ -12,10 +13,17 @@
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
-  "keywords": [],
+  "keywords": [
+    "chrome-extension",
+    "read-later",
+    "bookmarks",
+    "local-first",
+    "manifest-v3",
+    "react",
+    "typescript"
+  ],
   "author": "",
   "license": "ISC",
-  "description": "",
   "type": "module",
   "private": "true",
   "devDependencies": {

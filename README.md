@@ -2,10 +2,10 @@
 
 A minimal, local-first Chrome extension to save pages and revisit them from a clean, searchable dashboard. No servers, no accounts, all data on your device.
 
-## Badges
-
-- Node: >= 18
-- TypeScript • Vite • MV3
+[![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](LICENSE)
+[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D18-green.svg)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
+[![Chrome MV3](https://img.shields.io/badge/Chrome-MV3-yellow.svg)](https://developer.chrome.com/docs/extensions/mv3/intro/)
 
 ## Table of Contents
 
@@ -33,9 +33,9 @@ A minimal, local-first Chrome extension to save pages and revisit them from a cl
 - [Packaging](#packaging)
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
+- [Security](#security)
 - [License](#license)
 - [Acknowledgements](#acknowledgements)
-- [How to Update This README](#how-to-update-this-readme)
 
 ## Features
 
@@ -218,25 +218,43 @@ npm run build
 
 ## Contributing
 
-- Issues and PRs are welcome.
-- Guidelines:
-  - TypeScript throughout; keep changes small and focused
-  - Reuse existing UI primitives; avoid external UI libraries
-  - No schema or permission changes without discussion
+We welcome contributions from the community.
+
+### Reporting Bugs
+
+- Search [existing issues](../../issues) before opening a new one
+- Include steps to reproduce, expected vs. actual behavior, and browser version
+- Attach console logs or screenshots if relevant
+
+### Submitting Pull Requests
+
+1. Fork the repository and create a feature branch
+2. Run `npm run lint` and `npm run typecheck` before committing
+3. Write clear commit messages describing the change
+4. Open a PR against `main` with a description of what and why
+
+### Code Guidelines
+
+- TypeScript throughout; keep changes small and focused
+- Reuse existing UI primitives; avoid external UI libraries
+- No schema or permission changes without discussion
+- Run tests with `npm test` before submitting
+
+## Security
+
+If you discover a security vulnerability, please report it responsibly:
+
+1. **Do not** open a public issue
+2. Email the maintainers directly or use GitHub's private vulnerability reporting
+3. Include a description of the issue, steps to reproduce, and potential impact
+
+We will acknowledge receipt and work to address the issue promptly.
 
 ## License
 
-ISC — see `package.json`.
+This project is licensed under the ISC License — see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgements
 
-- Built with TypeScript, React, Vite, and CRXJS.
-- IndexedDB via `idb`.
-
-## How to Update This README
-
-- Update Features after UI changes
-- Update Permissions if `manifest.json` changes
-- Update commands when scripts change
-- Revalidate Node version when dependencies bump
-- Keep screenshots (if added) in `docs/` and update links
+- Built with TypeScript, React, Vite, and CRXJS
+- IndexedDB via [idb](https://github.com/jakearchibald/idb)
