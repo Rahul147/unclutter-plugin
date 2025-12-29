@@ -37,7 +37,7 @@ export function ItemCard({
   };
 
   return (
-    <Card>
+    <Card className={item.bookmarked ? "card--starred" : undefined}>
       <CardContent>
         <div className="row" style={{ alignItems: "flex-start" }}>
           <div style={{ minWidth: 0, flex: 1 }}>
