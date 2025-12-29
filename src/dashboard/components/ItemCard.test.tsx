@@ -7,7 +7,7 @@
  * Coverage includes:
  * - Rendering of item properties (title, URL, hostname, time)
  * - Click handlers for open, delete, bookmark actions
- * - Tag display and editing mode toggle
+ * - Inline tag editing (always visible when enabled)
  * - Accessibility attributes
  * - Edge cases (missing data, special characters)
  */
@@ -170,18 +170,18 @@ describe("ItemCard", () => {
       expect(screen.getByTitle("Delete item")).toBeInTheDocument();
     });
 
-    it("renders Edit tags button when enableTags is true", () => {
+    it("renders add tag button when enableTags is true", () => {
       const props = createProps({ enableTags: true });
       render(<ItemCard {...props} />);
 
-      expect(screen.getByText("Edit tags")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Add tag" })).toBeInTheDocument();
     });
 
-    it("does not render Edit tags button when enableTags is false", () => {
+    it("does not render add tag button when enableTags is false", () => {
       const props = createProps({ enableTags: false });
       render(<ItemCard {...props} />);
 
-      expect(screen.queryByText("Edit tags")).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Add tag" })).not.toBeInTheDocument();
     });
   });
 
@@ -243,53 +243,33 @@ describe("ItemCard", () => {
     });
   });
 
-  describe("tag editing", () => {
-    it("toggles tag editing mode when Edit tags button is clicked", () => {
+  describe("inline tag editing", () => {
+    it("shows add tag button when enableTags is true", () => {
       const props = createProps();
       render(<ItemCard {...props} />);
 
-      // Initially shows "Edit tags"
-      const editBtn = screen.getByText("Edit tags");
-      expect(editBtn).toBeInTheDocument();
-
-      // Click to enter edit mode
-      fireEvent.click(editBtn);
-
-      // Button text changes to "Done"
-      expect(screen.getByText("Done")).toBeInTheDocument();
-      expect(screen.queryByText("Edit tags")).not.toBeInTheDocument();
+      // Collapsed state shows + button
+      expect(screen.getByRole("button", { name: "Add tag" })).toBeInTheDocument();
     });
 
-    it("shows TagEditor when in editing mode", () => {
-      const props = createProps();
+    it("displays existing tags as interactive chips", () => {
+      const props = createProps({
+        item: createMockItem({ tags: ["react", "typescript"] }),
+      });
       render(<ItemCard {...props} />);
 
-      // Enter edit mode
-      fireEvent.click(screen.getByText("Edit tags"));
-
-      // TagEditor should be visible (has input with placeholder)
-      expect(screen.getByPlaceholderText("Add a tag…")).toBeInTheDocument();
+      // Tags displayed as chips with remove buttons
+      expect(screen.getByText("react")).toBeInTheDocument();
+      expect(screen.getByText("typescript")).toBeInTheDocument();
+      expect(screen.getByLabelText("Remove react")).toBeInTheDocument();
+      expect(screen.getByLabelText("Remove typescript")).toBeInTheDocument();
     });
 
-    it("hides TagEditor when Done is clicked", () => {
-      const props = createProps();
-      render(<ItemCard {...props} />);
-
-      // Enter edit mode
-      fireEvent.click(screen.getByText("Edit tags"));
-      expect(screen.getByPlaceholderText("Add a tag…")).toBeInTheDocument();
-
-      // Exit edit mode
-      fireEvent.click(screen.getByText("Done"));
-      expect(screen.queryByPlaceholderText("Add a tag…")).not.toBeInTheDocument();
-    });
-
-    it("does not show TagEditor when enableTags is false", () => {
+    it("does not show tag controls when enableTags is false", () => {
       const props = createProps({ enableTags: false });
       render(<ItemCard {...props} />);
 
-      expect(screen.queryByText("Edit tags")).not.toBeInTheDocument();
-      expect(screen.queryByPlaceholderText("Add a tag…")).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Add tag" })).not.toBeInTheDocument();
     });
   });
 

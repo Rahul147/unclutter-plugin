@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
 import { Button } from '../components/ui/button';
-import { Separator } from '../components/ui/separator';
 import { applyTheme, getTheme } from '../lib/theme';
 
 export default function App() {
@@ -56,15 +55,17 @@ export default function App() {
         </div>
       </header>
       <main className="container">
-        <div className="card">
+        <div className="card card--static">
+          <div className="card__header">
+            <h3 className="heading">Experimental</h3>
+          </div>
           <div className="card__content">
-            <div className="stack" style={{ gap: 8 }}>
-              <h3 className="card__title">Experimental</h3>
-              <Separator />
-              <div className="row" style={{ alignItems: 'center', gap: 8 }}>
+            <div className="stack" style={{ gap: 12 }}>
+              <div className="form-row">
                 <input
                   id="enableTags"
                   type="checkbox"
+                  className="checkbox"
                   checked={enableTags}
                   onChange={() => void toggleTagsFeature()}
                 />
@@ -74,7 +75,7 @@ export default function App() {
                   {enableTags ? 'Disable' : 'Enable'}
                 </Button>
               </div>
-              <p className="subtle">Adds tags, tag filters, and inline tag editing on the dashboard.</p>
+              <p className="caption">Adds tags, tag filters, and inline tag editing on the dashboard.</p>
             </div>
           </div>
         </div>

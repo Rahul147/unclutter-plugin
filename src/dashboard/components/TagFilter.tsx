@@ -20,27 +20,24 @@ export function TagFilter({ tags, selected, isAndMode, onToggleMode, onToggleTag
   return (
     <div className="stack" style={{ gap: 8 }}>
       <div className="row" style={{ alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-        <strong style={{ fontSize: 12, opacity: 0.8 }}>Tags</strong>
+        <span className="label">Tags</span>
         <Separator orientation="vertical" />
         {tags.length === 0 ? (
-          <div className="subtle" style={{ fontSize: 12, opacity: 0.7 }}>
-            No tags yet — add tags to start filtering
-          </div>
+          <span className="caption">No tags yet — add tags to start filtering</span>
         ) : (
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {tags.map(({ tag, count }: TagCount) => {
               const isSelected = selectedSet.has(tag);
               return (
-                <span
+                <Badge
                   key={tag}
+                  variant={isSelected ? "default" : "secondary"}
+                  className="badge--clickable"
                   onClick={() => onToggleTag(tag)}
-                  style={{ cursor: "pointer" }}
                   title={isSelected ? "Remove filter" : "Filter by tag"}
                 >
-                  <Badge variant={isSelected ? "default" : "secondary"}>
-                    {tag} <span style={{ opacity: 0.7 }}>({count})</span>
-                  </Badge>
-                </span>
+                  {tag} <span className="meta" style={{ marginTop: 0, marginLeft: 4 }}>({count})</span>
+                </Badge>
               );
             })}
           </div>

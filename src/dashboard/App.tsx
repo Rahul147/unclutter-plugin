@@ -75,15 +75,16 @@ function Dashboard() {
 
         <Separator />
 
-        <div className="row" style={{ alignItems: "center", gap: 8 }}>
+        <div className="row" style={{ alignItems: "center", gap: 12 }}>
           <TabNavigation tab={tab} counts={counts} onTabChange={setTab} />
           <div style={{ flex: 1 }} />
           <Input
-            placeholder="Search saved pages..."
+            placeholder="Search…"
             value={query}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setQuery(e.target.value)
             }
+            style={{ maxWidth: 200 }}
           />
         </div>
 
